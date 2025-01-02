@@ -1,6 +1,7 @@
 import {
   ApplicationLogger,
   LoggerFactory,
+  ResultCodes,
   ValueOrPromise,
   getError,
 } from '@minimaltech/node-infra';
@@ -18,16 +19,16 @@ import {
   app as crossProcessApplication,
   ipcMain,
 } from 'electron';
+import fs from 'fs';
+import path from 'path';
+import { ExposeVerbs } from '../..';
+import { BindingKeys } from '../../common/keys';
 import {
   IElectronApplication,
   IExposeMetadata,
   IWindowManager,
 } from '../../common/types';
 import { WindowManager } from '../services';
-
-import path from 'path';
-import { ExposeVerbs } from '../..';
-import { BindingKeys } from '../../common/keys';
 
 // --------------------------------------------------------------------------------
 export abstract class AbstractElectronApplication
@@ -91,9 +92,17 @@ export abstract class AbstractElectronApplication
 
   getPreloadPath(opts?: { fileName?: string }): string {
     const { fileName = 'preload.js' } = opts ?? { fileName: 'preload.js' };
-    const rs = path.resolve('dist', fileName);
-    this.logger.debug('[getPreloadPath] preloadPath: %s', rs);
-    return rs;
+    const preloadPath = path.resolve('dist', fileName);
+    this.logger.debug('[getPreloadPath] preloadPath: %s', preloadPath);
+
+    if (!fs.existsSync(preloadPath)) {
+      throw getError({
+        statusCode: ResultCodes.RS_4.NotFound,
+        message: `[getPreloadPath] Path: ${preloadPath} | preloadPath NOT FOUND`,
+      });
+    }
+
+    return preloadPath;
   }
 
   // ------------------------------------------------------------------------------

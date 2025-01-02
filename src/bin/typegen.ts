@@ -1,10 +1,8 @@
+#!/usr/bin/env node
+
 import fs from 'fs';
 import path from 'path';
 import ts from 'typescript';
-
-// ------------------------------------------------------------------------------------
-const srcDir = path.resolve(process.argv[2]);
-const outputFile = path.resolve(process.argv[3]);
 
 // ------------------------------------------------------------------------------------
 const interfaceDeclarations: Array<string> = ['export {}'];
@@ -12,18 +10,11 @@ const interfaceNames: Array<string> = [];
 const ipcMethods: Array<string> = [];
 
 // ------------------------------------------------------------------------------------
-const program = ts.createProgram([path.join(srcDir, 'index.ts')], {
-  target: ts.ScriptTarget.ES5,
-  module: ts.ModuleKind.CommonJS,
-});
-
-const checker = program.getTypeChecker();
-
-// ------------------------------------------------------------------------------------
-const processFile = (opts: { filePath: string }) => {
-  const { filePath } = opts;
+const processFile = (opts: { filePath: string; program: ts.Program }) => {
+  const { filePath, program } = opts;
   console.info('[processFile] Processing... | File: %s', filePath);
 
+  const typeChecker = program.getTypeChecker();
   const sourceFile = program.getSourceFile(filePath);
   if (!sourceFile) {
     console.error('[processFile] sourceFile NOT FOUND | File: %s', filePath);
@@ -52,17 +43,17 @@ const processFile = (opts: { filePath: string }) => {
       const parameters = member.parameters
         .map(param => {
           const paramName = (param.name as ts.Identifier).text;
-          const paramType = checker.getTypeAtLocation(param);
-          const typeString = checker.typeToString(paramType);
+          const paramType = typeChecker.getTypeAtLocation(param);
+          const typeString = typeChecker.typeToString(paramType);
           return `${paramName}: ${typeString}`;
         })
         .join(', ');
 
-      const returnType = checker.getReturnTypeOfSignature(
-        checker.getSignatureFromDeclaration(member)!,
+      const returnType = typeChecker.getReturnTypeOfSignature(
+        typeChecker.getSignatureFromDeclaration(member)!,
       );
 
-      const returnTypeString = checker.typeToString(returnType);
+      const returnTypeString = typeChecker.typeToString(returnType);
       methodSignatures.push(`\t${methodName}: (${parameters}) => ${returnTypeString};`);
     });
 
@@ -73,16 +64,33 @@ const processFile = (opts: { filePath: string }) => {
 
 // ------------------------------------------------------------------------------------
 const main = () => {
-  console.info('[electron-infra]');
+  const t = new Date().getTime();
+  console.info('[electron-infra] START | Generating routes/types...');
+
+  // ------------------------------------------------------------------------------------
+  // ts-node ./generate-types.ts ./src/controllers ./interface.d.ts
+  const srcDir = path.resolve(process.argv[2]);
+  const outputFile = path.resolve(process.argv[3]);
+  console.info('[electron-infra] srcDir: %s', srcDir);
+  console.info('[electron-infra] outputFile: %s', outputFile);
+  console.info();
+
+  const program = ts.createProgram([path.join(srcDir, 'index.ts')], {
+    target: ts.ScriptTarget.ES5,
+    module: ts.ModuleKind.CommonJS,
+  });
 
   if (!path.isAbsolute(srcDir)) {
-    console.error('[main] srcDir: %s | Required srcDir must be absolute path!', srcDir);
+    console.error(
+      '[electron-infra] srcDir: %s | Required srcDir must be absolute path!',
+      srcDir,
+    );
     process.exit(-1);
   }
 
   if (!path.isAbsolute(outputFile) || !outputFile.endsWith('d.ts')) {
     console.error(
-      "[main] outputFile: %s | Required outputFile must be absolute path and name ends with '.d.ts'!",
+      "[electron-infra] outputFile: %s | Required outputFile must be absolute path and name ends with '.d.ts'!",
       outputFile,
     );
     process.exit(-1);
@@ -90,7 +98,7 @@ const main = () => {
 
   const files = fs.readdirSync(srcDir);
   if (!files.length) {
-    console.error('[main] srcDir: %s | No file to export!', srcDir);
+    console.error('[electron-infra] srcDir: %s | No file to export!', srcDir);
     process.exit(-1);
   }
 
@@ -100,7 +108,7 @@ const main = () => {
       return;
     }
 
-    processFile({ filePath });
+    processFile({ filePath, program });
   });
 
   interfaceDeclarations.push(
@@ -110,11 +118,12 @@ const main = () => {
 
   fs.writeFileSync(outputFile, interfaceDeclarations.join('\n\n'), 'utf8');
 
-  console.info(ipcMethods, interfaceNames);
-  console.info(`Generated ${outputFile}`);
+  console.info();
+  console.info('[electron-infra] Generated outputFile | outputFile: %s', outputFile);
+  console.info(
+    '[electron-infra] DONE | Generated routes/types | Tooks: %s(ms)',
+    new Date().getTime() - t,
+  );
 };
 
-// ------------------------------------------------------------------------------------
 main();
-
-// ts-node ./src/lib/electron/utilities/generate-types.ts ./src/controllers ./interface.d.ts

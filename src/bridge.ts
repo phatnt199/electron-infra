@@ -1,4 +1,4 @@
-import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
+import { IpcRendererEvent, ipcRenderer } from 'electron';
 
 // ---------------------------------------------------------------------
 const system = {};
@@ -46,8 +46,29 @@ const ipc = {
 };
 
 // ---------------------------------------------------------------------
-contextBridge.exposeInMainWorld('bridgeApi', {
-  system,
-  preference,
-  ipc,
-});
+export const buildBridge = (opts: {
+  apiKey: string;
+  extraScopes?: {
+    [scope: string | symbol]: {
+      [fn: string | symbol]: Function;
+    };
+  };
+}) => {
+  const { apiKey, extraScopes = {} } = opts;
+
+  const scopes = Object.keys(extraScopes);
+  if (
+    scopes.includes('system') ||
+    scopes.includes('preference') ||
+    scopes.includes('ipc')
+  ) {
+    throw new Error(
+      '[buildBridge] Invalid extra scope name! extra scope cannot be [system | preference | ipc]',
+    );
+  }
+
+  return {
+    apiKey: apiKey,
+    routes: { system, preference, ipc, ...extraScopes },
+  };
+};

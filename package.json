@@ -25,7 +25,18 @@
       "default": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./bridge": {
+      "default": "./dist/bridge.js",
+      "types": "./dist/bridge.d.ts"
+    },
+    "./type-generator": {
+      "default": "./dist/typegen.js",
+      "types": "./dist/typegen.d.ts"
+    },
     "./package.json": "./package.json"
+  },
+  "bin": {
+    "ei-typegen": "./dist/bin/typegen.js"
   },
   "engines": {
     "node": ">=18"
