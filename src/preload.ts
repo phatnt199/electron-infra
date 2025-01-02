@@ -30,9 +30,15 @@ const ipc = {
 
   off: <T>(opts: {
     channel: string;
-    listener: (event: IpcRendererEvent, payload: T) => void;
+    listener?: (event: IpcRendererEvent, payload: T) => void;
   }) => {
-    return ipcRenderer.off(opts.channel, opts.listener);
+    const { channel, listener } = opts;
+
+    if (!listener) {
+      return ipcRenderer.removeAllListeners(channel);
+    }
+
+    return ipcRenderer.off(channel, listener);
   },
   offAll: (opts: { channel: string }) => {
     return ipcRenderer.removeAllListeners(opts.channel);
