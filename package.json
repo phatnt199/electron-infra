@@ -1,0 +1,96 @@
+{
+  "name": "@minimaltech/electron-infra",
+  "version": "0.0.1",
+  "description": "Minimal Technology ElectronJS Infrastructure",
+  "keywords": [
+    "desktop",
+    "desktop app",
+    "desktop framework",
+    "electron",
+    "app",
+    "application",
+    "framework",
+    "ElectronJS",
+    "loopback",
+    "loopback-application",
+    "infrastructure",
+    "minimaltech",
+    "minimaltek",
+    "mt",
+    "infra",
+    "electronjs framework"
+  ],
+  "exports": {
+    ".": {
+      "default": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "sh ./scripts/build.sh",
+    "clean": "sh ./scripts/clean.sh",
+    "eslint": "eslint --report-unused-disable-directives .",
+    "lint": "pnpm eslint && pnpm prettier:cli",
+    "lint:fix": "pnpm eslint --fix && pnpm prettier:fix",
+    "prettier:cli": "prettier \"**/*.{js,ts}\" -l",
+    "prettier:fix": "pnpm prettier:cli --write",
+    "rebuild": "sh ./scripts/rebuild.sh no-version",
+    "rebuild:major": "sh ./scripts/rebuild.sh major",
+    "rebuild:minor": "sh ./scripts/rebuild.sh minor",
+    "rebuild:patch": "sh ./scripts/rebuild.sh patch",
+    "pretest:dev": "pnpm run rebuild",
+    "test:dev": "NODE_ENV=development mocha -r dotenv-flow/config -r source-map-support/register --timeout 60000 --exit dist/__tests__/index.js",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/phatnt199/electron-infra.git"
+  },
+  "author": "Minimal Technology <developer@miminaltek.com>",
+  "bugs": {
+    "url": "https://github.com/phatnt199/electron-infra/issues"
+  },
+  "homepage": "https://github.com/phatnt199/electron-infra/wiki",
+  "license": "MIT",
+  "files": [
+    "README.md",
+    "LICENSE",
+    "dist",
+    "!/**/tests",
+    "!/**/dist/tests",
+    "!/**/__tests__"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@minimaltech/node-infra": "^0.4.0",
+    "@reduxjs/toolkit": "^2.5.0",
+    "dotenv-flow": "^4.0.1",
+    "fs-extra": "^11.1.1",
+    "lodash": "^4.17.21",
+    "redux": "^5.0.1",
+    "redux-saga": "^1.2.1",
+    "rxjs": "^7.5.6"
+  },
+  "devDependencies": {
+    "@loopback/build": "^11.0.3",
+    "@minimaltech/eslint-node": "^0.1.15",
+    "@types/lodash": "^4.17.13",
+    "@types/node": "^20.17.9",
+    "electron": "^33.2.1",
+    "eslint": "^8.57.1",
+    "husky": "^9.1.7",
+    "prettier": "^3.4.1",
+    "source-map-support": "^0.5.21",
+    "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.10",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.7.2"
+  },
+  "packageManager": "pnpm@9.11.0+sha512.0a203ffaed5a3f63242cd064c8fb5892366c103e328079318f78062f24ea8c9d50bc6a47aa3567cabefd824d170e78fa2745ed1f16b132e16436146b7688f19b"
+}
