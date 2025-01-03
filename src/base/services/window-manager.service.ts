@@ -1,6 +1,7 @@
 import { BaseService, ResultCodes, getError } from '@minimaltech/node-infra';
 import { IWindowManager } from '../../common';
 import { BrowserWindow, TBrowserWindowOptions } from '../models';
+import { Menu } from 'electron';
 
 export class WindowManager extends BaseService implements IWindowManager {
   private static instance: WindowManager | null;
@@ -46,6 +47,10 @@ export class WindowManager extends BaseService implements IWindowManager {
     const identifier = window.getIdentifier();
     this.container.set(identifier, { window, options: opts });
 
+    if (opts.menuFactory) {
+      Menu.setApplicationMenu(opts.menuFactory.getMenu(window));
+    }
+
     this.logger.info(
       '[open] Identifier: %s | Name: %s | Window CREATED',
       identifier,
@@ -67,6 +72,8 @@ export class WindowManager extends BaseService implements IWindowManager {
     window.on('close', () => {
       this.container.delete(identifier);
     });
+
+    window.webContents.toggleDevTools();
 
     return window;
   }

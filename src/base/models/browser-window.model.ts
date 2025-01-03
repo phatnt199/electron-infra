@@ -4,11 +4,13 @@ import {
   BrowserWindowConstructorOptions,
   BrowserWindow as ElectronBrowserWindow,
 } from 'electron';
+import { AbstractMenuFactory } from '../menus';
 
 export type TBrowserWindowOptions = BrowserWindowConstructorOptions & {
   identifier?: string;
   name: string;
   url: string;
+  menuFactory?: AbstractMenuFactory;
 };
 
 export class BrowserWindow extends ElectronBrowserWindow {
