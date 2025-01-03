@@ -26,3 +26,10 @@ export function subscriber(
 ): MethodDecorator {
   return expose({ ...(spec ?? {}), verb: ExposeVerbs.SUBSCRIBER }, opts);
 }
+
+export function sender(
+  spec?: Omit<IExposeMetadata, 'verb'>,
+  opts?: DecoratorOptions,
+): MethodDecorator {
+  return expose({ ...(spec ?? {}), verb: ExposeVerbs.SENDER }, opts);
+}

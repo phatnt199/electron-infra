@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { ExposeVerbs } from '@/common';
 import fs from 'fs';
 import path from 'path';
 import ts from 'typescript';
@@ -8,6 +9,9 @@ import ts from 'typescript';
 const interfaceDeclarations: Array<string> = ['export {}'];
 const interfaceNames: Array<string> = [];
 const ipcMethods: Array<string> = [];
+const ipcSenderMethods: Array<string> = [];
+const ipcHandlerMethods: Array<string> = [];
+const ipcSubscriberMethods: Array<string> = [];
 
 // ------------------------------------------------------------------------------------
 const processFile = (opts: { filePath: string; program: ts.Program }) => {
@@ -31,8 +35,13 @@ const processFile = (opts: { filePath: string; program: ts.Program }) => {
     interfaceNames.push(interfaceName);
 
     const methodSignatures: string[] = [];
+
     node.members.forEach(member => {
-      if (!ts.isMethodDeclaration(member) || !member.name) {
+      if (
+        !ts.isMethodDeclaration(member) ||
+        !member.name ||
+        !ts.canHaveDecorators(member)
+      ) {
         return;
       }
 
@@ -40,6 +49,24 @@ const processFile = (opts: { filePath: string; program: ts.Program }) => {
       const ipcMethod = `${className}.${methodName}`;
       ipcMethods.push(ipcMethod);
 
+      // ----------------------------------------
+      const decorators = ts.getDecorators(member as ts.HasDecorators);
+      const decoratorStrings = decorators?.map(
+        d => ((d.expression as ts.CallExpression).expression as ts.Identifier).text,
+      );
+      if (decoratorStrings?.includes(ExposeVerbs.HANDLER)) {
+        ipcHandlerMethods.push(ipcMethod);
+      }
+
+      if (decoratorStrings?.includes(ExposeVerbs.SUBSCRIBER)) {
+        ipcSubscriberMethods.push(ipcMethod);
+      }
+
+      if (decoratorStrings?.includes(ExposeVerbs.SENDER)) {
+        ipcSenderMethods.push(ipcMethod);
+      }
+
+      // ----------------------------------------
       const parameters = member.parameters
         .map(param => {
           const paramName = (param.name as ts.Identifier).text;
@@ -114,6 +141,9 @@ const main = () => {
   interfaceDeclarations.push(
     `export type TControllerMethods =\n\t| ${interfaceNames.map(el => `keyof ${el}`).join('\n\t| ')}`,
     `export type TIpcMethods =\n\t | ${ipcMethods.map(el => `'${el}'`).join('\n\t| ')}`,
+    `export type TIpcSenderMethods =\n\t | ${ipcSenderMethods.map(el => `'${el}'`).join('\n\t| ')}`,
+    `export type TIpcHandlerMethods =\n\t | ${ipcSenderMethods.map(el => `'${el}'`).join('\n\t| ')}`,
+    `export type TIpcSubscriberMethods =\n\t | ${ipcSubscriberMethods.map(el => `'${el}'`).join('\n\t| ')}`,
   );
 
   fs.writeFileSync(outputFile, interfaceDeclarations.join('\n\n'), 'utf8');

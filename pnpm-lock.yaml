@@ -1652,13 +1652,17 @@ packages:
     resolution: {integrity: sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==}
     engines: {node: 6.* || 8.* || >= 10.*}
 
-  get-intrinsic@1.2.6:
-    resolution: {integrity: sha512-qxsEs+9A+u85HhllWJJFicJfPDhRmjzoYdl64aMWW9yRIJmSyxdn8IEkuIM530/7T+lv0TIHd8L6Q/ra0tEoeA==}
+  get-intrinsic@1.2.7:
+    resolution: {integrity: sha512-VW6Pxhsrk0KAOqs3WEd0klDiF/+V7gQOpAvY1jVU/LHmaD/kQO4523aiJuikX/QAKYiW6x8Jh+RJej1almdtCA==}
     engines: {node: '>= 0.4'}
 
   get-package-type@0.1.0:
     resolution: {integrity: sha512-pjzuKtY64GYfWizNAJ0fr9VqttZkNiK2iS430LtIHzjBEr6bX8Am2zm4sW4Ro5wjWW5cAlRL1qAMTcXbjNAO2Q==}
     engines: {node: '>=8.0.0'}
+
+  get-proto@1.0.1:
+    resolution: {integrity: sha512-sTSfBjoXBp89JvIKIefqw7U2CCebsc74kiY6awiGogKtoSGbgjYE/G/+l9sF3MWFPNc9IcoOC4ODfKHfxFmp0g==}
+    engines: {node: '>= 0.4'}
 
   get-stream@5.2.0:
     resolution: {integrity: sha512-nBF+F1rAZVCu/p7rjzgA+Yb4lfYXrpl7a6VmJrU8wF9I1CKvP/QwPNZHnOlwbTkY6dvtFIzFMSyQXbLoTQPRpA==}
@@ -1829,8 +1833,8 @@ packages:
     resolution: {integrity: sha512-EdDDZu4A2OyIK7Lr/2zG+w5jmbuk1DVBnEwREQvBzspBJkCEbRa8GxU1lghYcaGJCnRWibjDXlq779X1/y5xwg==}
     engines: {node: '>=8'}
 
-  inflection@3.0.0:
-    resolution: {integrity: sha512-1zEJU1l19SgJlmwqsEyFTbScw/tkMHFenUo//Y0i+XEP83gDFdMvPizAD/WGcE+l1ku12PcTVHQhO6g5E0UCMw==}
+  inflection@3.0.1:
+    resolution: {integrity: sha512-EpyF+TLa3xZPClbkp9pDJZtJFYPHouWuFYsfAQI8AfjnaPVOpmRV6GSzCs+QGelj2eZ7oQllcK23aI1vHhPVVg==}
     engines: {node: '>=18.0.0'}
 
   inflight@1.0.6:
@@ -1890,8 +1894,8 @@ packages:
     resolution: {integrity: sha512-zymm5+u+sCsSWyD9qNaejV3DFvhCKclKdizYaJUuHA83RLjb7nSuGnddCHGv0hk+KY7BMAlsWeK4Ueg6EV6XQg==}
     engines: {node: '>=8'}
 
-  is-generator-function@1.0.10:
-    resolution: {integrity: sha512-jsEjy9l3yiXEQ+PsXdmBwEPcOxaXWLspKdplFUVI9vq1iZgIekeC0L167qeu86czQaxed3q/Uzuw0swL0irL8A==}
+  is-generator-function@1.1.0:
+    resolution: {integrity: sha512-nPUB5km40q9e8UfN/Zc24eLlzdSf9OfKByBw9CIdw4H1giPMeA0OIJvbchsCu4npfI2QcMVBsGEBHKZ7wLTWmQ==}
     engines: {node: '>= 0.4'}
 
   is-glob@4.0.3:
@@ -1909,6 +1913,10 @@ packages:
   is-plain-obj@2.1.0:
     resolution: {integrity: sha512-YWnfyRwxL/+SsrWYfOpUtz5b3YD+nyfkHvjbcanzk8zgyO4ASD67uVMRt8k5bM4lLMDnXfriRhOpemw+NfT1eA==}
     engines: {node: '>=8'}
+
+  is-regex@1.2.1:
+    resolution: {integrity: sha512-MjYsKHO5O7mCsmRGxWcLWheFqN9DJ/2TmngvjKXihe6efViPqc274+Fx/4fYj/r03+ESvBdTXK0V6tA3rgez1g==}
+    engines: {node: '>= 0.4'}
 
   is-stream@2.0.1:
     resolution: {integrity: sha512-hFoiJiTl63nn+kstHGBtewWSKnQLpyb155KHheA1l39uvtO9nWIop1p3udqPcUd/xbF1VLMO4n7OI6p7RbngDg==}
@@ -2778,6 +2786,10 @@ packages:
 
   safe-buffer@5.2.1:
     resolution: {integrity: sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==}
+
+  safe-regex-test@1.1.0:
+    resolution: {integrity: sha512-x/+Cz4YrimQxQccJf5mKEbIa1NzeCRNI5Ecl/ekmlYaampdNLPalVyIcCZNNH3MvmqBugV5TMYZXv0ljslUlaw==}
+    engines: {node: '>= 0.4'}
 
   safe-stable-stringify@2.5.0:
     resolution: {integrity: sha512-b3rppTKm9T+PsVCBEOUR46GWI7fdOs00VKZ1+9c1EWDaDMvjQc6tUwuFyIprgGgTcWoVHSKrU8H31ZHA2e0RHA==}
@@ -4736,13 +4748,13 @@ snapshots:
     dependencies:
       call-bind-apply-helpers: 1.0.1
       es-define-property: 1.0.1
-      get-intrinsic: 1.2.6
+      get-intrinsic: 1.2.7
       set-function-length: 1.2.2
 
   call-bound@1.0.3:
     dependencies:
       call-bind-apply-helpers: 1.0.1
-      get-intrinsic: 1.2.6
+      get-intrinsic: 1.2.7
 
   callsites@3.1.0: {}
 
@@ -5446,20 +5458,25 @@ snapshots:
 
   get-caller-file@2.0.5: {}
 
-  get-intrinsic@1.2.6:
+  get-intrinsic@1.2.7:
     dependencies:
       call-bind-apply-helpers: 1.0.1
-      dunder-proto: 1.0.1
       es-define-property: 1.0.1
       es-errors: 1.3.0
       es-object-atoms: 1.0.0
       function-bind: 1.1.2
+      get-proto: 1.0.1
       gopd: 1.2.0
       has-symbols: 1.1.0
       hasown: 2.0.2
       math-intrinsics: 1.1.0
 
   get-package-type@0.1.0: {}
+
+  get-proto@1.0.1:
+    dependencies:
+      dunder-proto: 1.0.1
+      es-object-atoms: 1.0.0
 
   get-stream@5.2.0:
     dependencies:
@@ -5649,7 +5666,7 @@ snapshots:
 
   indent-string@4.0.0: {}
 
-  inflection@3.0.0: {}
+  inflection@3.0.1: {}
 
   inflight@1.0.6:
     dependencies:
@@ -5703,9 +5720,12 @@ snapshots:
 
   is-fullwidth-code-point@3.0.0: {}
 
-  is-generator-function@1.0.10:
+  is-generator-function@1.1.0:
     dependencies:
+      call-bound: 1.0.3
+      get-proto: 1.0.1
       has-tostringtag: 1.0.2
+      safe-regex-test: 1.1.0
 
   is-glob@4.0.3:
     dependencies:
@@ -5716,6 +5736,13 @@ snapshots:
   is-path-inside@3.0.3: {}
 
   is-plain-obj@2.1.0: {}
+
+  is-regex@1.2.1:
+    dependencies:
+      call-bound: 1.0.3
+      gopd: 1.2.0
+      has-tostringtag: 1.0.2
+      hasown: 2.0.2
 
   is-stream@2.0.1: {}
 
@@ -5967,7 +5994,7 @@ snapshots:
       change-case: 4.1.2
       debug: 4.4.0(supports-color@8.1.1)
       depd: 2.0.0
-      inflection: 3.0.0
+      inflection: 3.0.1
       lodash: 4.17.21
       loopback-connector: 6.1.12
       minimatch: 10.0.1
@@ -6670,6 +6697,12 @@ snapshots:
 
   safe-buffer@5.2.1: {}
 
+  safe-regex-test@1.1.0:
+    dependencies:
+      call-bound: 1.0.3
+      es-errors: 1.3.0
+      is-regex: 1.2.1
+
   safe-stable-stringify@2.5.0: {}
 
   safer-buffer@2.1.2: {}
@@ -6732,7 +6765,7 @@ snapshots:
       define-data-property: 1.1.4
       es-errors: 1.3.0
       function-bind: 1.1.2
-      get-intrinsic: 1.2.6
+      get-intrinsic: 1.2.7
       gopd: 1.2.0
       has-property-descriptors: 1.0.2
 
@@ -6753,14 +6786,14 @@ snapshots:
     dependencies:
       call-bound: 1.0.3
       es-errors: 1.3.0
-      get-intrinsic: 1.2.6
+      get-intrinsic: 1.2.7
       object-inspect: 1.13.3
 
   side-channel-weakmap@1.0.2:
     dependencies:
       call-bound: 1.0.3
       es-errors: 1.3.0
-      get-intrinsic: 1.2.6
+      get-intrinsic: 1.2.7
       object-inspect: 1.13.3
       side-channel-map: 1.0.1
 
@@ -7124,7 +7157,7 @@ snapshots:
     dependencies:
       inherits: 2.0.4
       is-arguments: 1.2.0
-      is-generator-function: 1.0.10
+      is-generator-function: 1.1.0
       is-typed-array: 1.1.15
       which-typed-array: 1.1.18
 
