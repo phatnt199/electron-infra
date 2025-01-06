@@ -79,6 +79,7 @@ export abstract class AbstractElectronApplication
   abstract onBeforeQuit(event: Electron.Event): void;
   abstract onQuit(event: Electron.Event, exitCode: number): void;
 
+  abstract getProjectRoot(): string;
   abstract bindContext(): ValueOrPromise<void>;
 
   // ------------------------------------------------------------------------------
@@ -92,7 +93,9 @@ export abstract class AbstractElectronApplication
 
   getPreloadPath(opts?: { fileName?: string }): string {
     const { fileName = 'preload.js' } = opts ?? { fileName: 'preload.js' };
-    const preloadPath = path.resolve('dist', fileName);
+
+    const projectRoot = this.getProjectRoot();
+    const preloadPath = path.join(projectRoot, fileName);
     this.logger.debug('[getPreloadPath] preloadPath: %s', preloadPath);
 
     if (!fs.existsSync(preloadPath)) {
