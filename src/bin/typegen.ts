@@ -141,9 +141,15 @@ const main = () => {
   interfaceDeclarations.push(
     `export type TControllerMethods =\n\t| ${interfaceNames.map(el => `keyof ${el}`).join('\n\t| ')}`,
     `export type TIpcMethods =\n\t | ${ipcMethods.map(el => `'${el}'`).join('\n\t| ')}`,
-    `export type TIpcSenderMethods =\n\t | ${ipcSenderMethods.map(el => `'${el}'`).join('\n\t| ')}`,
-    `export type TIpcHandlerMethods =\n\t | ${ipcSenderMethods.map(el => `'${el}'`).join('\n\t| ')}`,
-    `export type TIpcSubscriberMethods =\n\t | ${ipcSubscriberMethods.map(el => `'${el}'`).join('\n\t| ')}`,
+    ipcSenderMethods.length
+      ? `export type TIpcSenderMethods =\n\t | ${ipcSenderMethods.map(el => `'${el}'`).join('\n\t| ')}`
+      : '',
+    ipcHandlerMethods.length
+      ? `export type TIpcHandlerMethods =\n\t | ${ipcHandlerMethods.map(el => `'${el}'`).join('\n\t| ')}`
+      : '',
+    ipcSubscriberMethods.length
+      ? `export type TIpcSubscriberMethods =\n\t | ${ipcSubscriberMethods.map(el => `'${el}'`).join('\n\t| ')}`
+      : '',
   );
 
   fs.writeFileSync(outputFile, interfaceDeclarations.join('\n\n'), 'utf8');
