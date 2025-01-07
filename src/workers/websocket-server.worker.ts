@@ -167,6 +167,8 @@ export class WebsocketServer {
           console.log('[WebsocketServer][handleMessageData] Unsupported data');
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.log('[WebsocketServer][handleMessageData] Error: %s', e);
+    }
   }
 }
