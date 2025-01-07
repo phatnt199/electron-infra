@@ -151,7 +151,7 @@ export abstract class AbstractElectronApplication
         });
       }
 
-      Reflect.apply(controller[methodName], controller, args);
+      return Reflect.apply(controller[methodName], controller, args);
     };
   }
 
@@ -200,7 +200,7 @@ export abstract class AbstractElectronApplication
       case ExposeVerbs.HANDLER: {
         ipcAction = 'handle';
         ipcMain.handle(ipcChannel, (_event: IpcMainInvokeEvent, ...args: any[]) => {
-          executor(...args);
+          return Promise.resolve(executor(...args));
         });
         break;
       }
