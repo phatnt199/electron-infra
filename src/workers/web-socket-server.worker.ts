@@ -11,7 +11,7 @@ type TTopic = string;
 type TClientId = string;
 type TClientMap = Map<TClientId, WebSocket>;
 
-export class WebsocketServer {
+export class WebSocketServer {
   private host: string;
   private port: number;
   private server: WebSocket.Server;
@@ -33,7 +33,7 @@ export class WebsocketServer {
 
     this.server.on('connection', (ws, request) => {
       const clientId = get(request.headers, 'sec-websocket-key')?.toString() ?? '';
-      console.log('[WebsocketServer] Client connected | Key: ', clientId);
+      console.log('[WebSocketServer] Client connected | Key: ', clientId);
 
       this.clients.set(clientId, ws);
 
@@ -42,7 +42,7 @@ export class WebsocketServer {
       });
 
       ws.on('error', error => {
-        console.log('[WebsocketServer] Error: %s', error);
+        console.log('[WebSocketServer] Error: %s', error);
       });
 
       ws.on('close', () => {
@@ -51,7 +51,7 @@ export class WebsocketServer {
           map.delete(clientId);
         }
 
-        console.log('[WebsocketServer] Client %s disconnected', clientId);
+        console.log('[WebSocketServer] Client %s disconnected', clientId);
       });
     });
   }
@@ -66,7 +66,7 @@ export class WebsocketServer {
 
     if (!client) {
       console.log(
-        '[WebsocketServer][subscribe] Client %s subscribered faild | Client is not exist',
+        '[WebSocketServer][subscribe] Client %s subscribered faild | Client is not exist',
         clientId,
       );
       return;
@@ -74,7 +74,7 @@ export class WebsocketServer {
 
     if (!client || isExisted) {
       console.log(
-        '[WebsocketServer][subscribe] Client %s subscribered faild | Client already subscribered',
+        '[WebSocketServer][subscribe] Client %s subscribered faild | Client already subscribered',
         clientId,
       );
       return;
@@ -83,7 +83,7 @@ export class WebsocketServer {
     const newSubscribers = currentSubscribers.set(clientId, client);
     this.subscribers.set(topic, newSubscribers);
     console.log(
-      '[WebsocketServer][subscribe] Client %s is subscribered to topic %s sucessful | Number of clients: %d',
+      '[WebSocketServer][subscribe] Client %s is subscribered to topic %s sucessful | Number of clients: %d',
       clientId,
       topic,
       newSubscribers.size,
@@ -102,7 +102,7 @@ export class WebsocketServer {
     const isDeleted = currentSubscribers.delete(clientId);
     if (!isDeleted) {
       console.log(
-        '[WebsocketServer][unsubscribe] Client %s not exist in topic %s',
+        '[WebSocketServer][unsubscribe] Client %s not exist in topic %s',
         clientId,
         topic,
       );
@@ -112,7 +112,7 @@ export class WebsocketServer {
     const newSubscribers = currentSubscribers;
     this.subscribers.set(topic, newSubscribers);
     console.log(
-      '[WebsocketServer][unsubscribe] Client %s is subscribered to topic %s sucessful | Number of clients: %d',
+      '[WebSocketServer][unsubscribe] Client %s is subscribered to topic %s sucessful | Number of clients: %d',
       clientId,
       topic,
       newSubscribers.size,
@@ -140,7 +140,7 @@ export class WebsocketServer {
     try {
       const parsedData = JSON.parse(data.toString());
       console.log(
-        '[WebsocketServer][handleMessageData] Key: %s | Data: %s',
+        '[WebSocketServer][handleMessageData] Key: %s | Data: %s',
         clientId,
         parsedData,
       );
@@ -164,11 +164,11 @@ export class WebsocketServer {
           break;
         }
         default: {
-          console.log('[WebsocketServer][handleMessageData] Unsupported data');
+          console.log('[WebSocketServer][handleMessageData] Unsupported data');
         }
       }
     } catch (e) {
-      console.log('[WebsocketServer][handleMessageData] Error: %s', e);
+      console.log('[WebSocketServer][handleMessageData] Error: %s', e);
     }
   }
 }

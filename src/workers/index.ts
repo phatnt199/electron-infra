@@ -1,1 +1,1 @@
-export * from './websocket-server.worker';
+export * from './web-socket-server.worker';
