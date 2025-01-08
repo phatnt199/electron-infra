@@ -4,7 +4,8 @@ import WebSocket from 'ws';
 enum MessageType {
   SUBSCRIBE = 1,
   UNSUBSCRIBE = 2,
-  PUBLISH = 3,
+  UNSUBSCRIBE_ALL = 3,
+  PUBLISH = 4,
 }
 
 type TTopic = string;
@@ -112,10 +113,29 @@ export class WebSocketServer {
     const newSubscribers = currentSubscribers;
     this.subscribers.set(topic, newSubscribers);
     console.log(
-      '[WebSocketServer][unsubscribe] Client %s is subscribered to topic %s sucessful | Number of clients: %d',
+      '[WebSocketServer][unsubscribe] Client %s is unsubscribered from topic %s sucessful | Number of clients: %d',
       clientId,
       topic,
       newSubscribers.size,
+    );
+  }
+
+  // ----------------------------------------------------------------------------------------------------
+  private unsubscribeAll(opts: { clientId: string }) {
+    const { clientId } = opts;
+
+    let numOfUnsubscribeTopic = 0;
+    for (const [, subscribers] of this.subscribers) {
+      const isDeleted = subscribers.delete(clientId);
+      if (isDeleted) {
+        numOfUnsubscribeTopic++;
+      }
+    }
+
+    console.log(
+      '[WebSocketServer][unsubscribeAll] Client %s is unsubscribered from all sucessful | Number of unsubscribered topic: %d',
+      clientId,
+      numOfUnsubscribeTopic,
     );
   }
 
@@ -128,8 +148,12 @@ export class WebSocketServer {
       return;
     }
 
-    for (const [, client] of currentTopicMap) {
-      client.send(payload);
+    try {
+      for (const [, client] of currentTopicMap) {
+        client.send(JSON.stringify({ topic, payload }));
+      }
+    } catch (e) {
+      console.log('[WebsocketServer][publish] Error: %s', e);
     }
   }
 
@@ -155,6 +179,10 @@ export class WebSocketServer {
           this.unsubscribe({ clientId, topic: get(parsedData, 'topic', '') });
           break;
         }
+        case MessageType.UNSUBSCRIBE_ALL: {
+          this.unsubscribeAll({ clientId });
+          break;
+        }
         case MessageType.PUBLISH: {
           this.publish({
             clientId,
@@ -168,7 +196,7 @@ export class WebSocketServer {
         }
       }
     } catch (e) {
-      console.log('[WebSocketServer][handleMessageData] Error: %s', e);
+      console.log('[WebsocketServer][handleMessageData] Error: %s', e);
     }
   }
 }
