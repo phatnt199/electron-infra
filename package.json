@@ -29,6 +29,10 @@
       "default": "./dist/bridge.js",
       "types": "./dist/bridge.d.ts"
     },
+    "./workers": {
+      "default": "./dist/workers/index.js",
+      "types": "./dist/workers/index.d.ts"
+    },
     "./type-generator": {
       "default": "./dist/typegen.js",
       "types": "./dist/typegen.d.ts"
@@ -86,13 +90,15 @@
     "lodash": "^4.17.21",
     "redux": "^5.0.1",
     "redux-saga": "^1.2.1",
-    "rxjs": "^7.5.6"
+    "rxjs": "^7.5.6",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@loopback/build": "^11.0.3",
     "@minimaltech/eslint-node": "^0.1.15",
     "@types/lodash": "^4.17.13",
     "@types/node": "^20.17.9",
+    "@types/ws": "^8.5.13",
     "electron": "^33.2.1",
     "eslint": "^8.57.1",
     "husky": "^9.1.7",
