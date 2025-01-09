@@ -140,7 +140,7 @@ export class WebSocketServer {
   }
 
   // ----------------------------------------------------------------------------------------------------
-  private publish(opts: { clientId: string; topic: string; payload: any }) {
+  private publish(opts: { topic: string; payload: any }) {
     const { payload, topic } = opts;
 
     const currentTopicMap = this.subscribers.get(topic);
@@ -152,6 +152,11 @@ export class WebSocketServer {
       for (const [, client] of currentTopicMap) {
         client.send(JSON.stringify({ topic, payload }));
       }
+      console.log(
+        '[WebsocketServer][public] Publish to topic %s successful | Payload: %s',
+        topic,
+        payload,
+      );
     } catch (e) {
       console.log('[WebsocketServer][publish] Error: %s', e);
     }
@@ -185,7 +190,6 @@ export class WebSocketServer {
         }
         case MessageType.PUBLISH: {
           this.publish({
-            clientId,
             topic: get(parsedData, 'topic', ''),
             payload: get(parsedData, 'payload', undefined),
           });
