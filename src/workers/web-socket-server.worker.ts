@@ -121,7 +121,17 @@ export class WebSocketServer {
     const { clientId, topic } = opts;
 
     const clientSet = this.topicToClients.get(topic);
-    if (!clientSet || !clientSet.delete(clientId)) {
+    if (!clientSet) {
+      console.log(
+        '[WebSocketServer][unsubscribe] Client %s not exist in topic %s',
+        clientId,
+        topic,
+      );
+      return;
+    }
+
+    const isDeleted = clientSet.delete(clientId);
+    if (!isDeleted) {
       console.log(
         '[WebSocketServer][unsubscribe] Client %s not exist in topic %s',
         clientId,
@@ -144,7 +154,8 @@ export class WebSocketServer {
 
     let count = 0;
     for (const [_topic, clientSet] of this.topicToClients) {
-      if (clientSet.delete(clientId)) {
+      const isDeleted = clientSet.delete(clientId);
+      if (isDeleted) {
         count++;
       }
     }
