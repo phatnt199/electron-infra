@@ -1,23 +1,14 @@
 import get from 'lodash/get';
 import WebSocket from 'ws';
-
-enum MessageType {
-  SUBSCRIBE = 1,
-  UNSUBSCRIBE = 2,
-  UNSUBSCRIBE_ALL = 3,
-  PUBLISH = 4,
-}
-
-type TTopic = string;
-type TClientId = string;
-type TClientMap = Map<TClientId, WebSocket>;
+import { MessageType, TClientId, TTopic } from './types';
+import { WebSocketMessage } from './web-socket-message';
 
 export class WebSocketServer {
   private host: string;
   private port: number;
   private server: WebSocket.Server;
-  private subscribers: Map<TTopic, TClientMap> = new Map();
-  private clients: TClientMap = new Map();
+  private topicToClients: Map<TTopic, Set<TClientId>> = new Map();
+  private clients: Map<TClientId, WebSocket> = new Map();
 
   constructor(opts: { host: string; port: number; autoRun?: boolean }) {
     this.host = opts.host;
@@ -48,8 +39,8 @@ export class WebSocketServer {
 
       ws.on('close', () => {
         this.clients.delete(clientId);
-        for (const [, map] of this.subscribers) {
-          map.delete(clientId);
+        for (const [, clientSet] of this.topicToClients) {
+          clientSet.delete(clientId);
         }
 
         console.log('[WebSocketServer] Client %s disconnected', clientId);
@@ -58,13 +49,48 @@ export class WebSocketServer {
   }
 
   // ----------------------------------------------------------------------------------------------------
+  private handleMessageData(opts: { clientId: string; data: WebSocket.RawData }) {
+    const { clientId, data } = opts;
+
+    try {
+      const parsedData = WebSocketMessage.deserialize(data.toString());
+      if (!parsedData) {
+        console.log('[WebSocketServer][handleMessageData] Unsupported data');
+        return;
+      }
+
+      const { messageType, topic, payload } = parsedData;
+      switch (messageType) {
+        case MessageType.SUBSCRIBE: {
+          this.subscribe({ clientId, topic });
+          break;
+        }
+        case MessageType.UNSUBSCRIBE: {
+          this.unsubscribe({ clientId, topic });
+          break;
+        }
+        case MessageType.UNSUBSCRIBE_ALL: {
+          this.unsubscribeAll({ clientId });
+          break;
+        }
+        case MessageType.PUBLISH: {
+          this.publish({ topic, payload });
+          break;
+        }
+        default: {
+          console.log('[WebSocketServer][handleMessageData] Unsupported data');
+        }
+      }
+    } catch (e) {
+      console.log('[WebsocketServer][handleMessageData] Error: %s', e);
+    }
+  }
+
+  // ----------------------------------------------------------------------------------------------------
   private subscribe(opts: { clientId: string; topic: string }) {
     const { clientId, topic } = opts;
 
-    const currentSubscribers = this.subscribers.get(topic) ?? new Map();
     const client = this.clients.get(clientId);
-    const isExisted = Boolean(currentSubscribers.get(clientId));
-
     if (!client) {
       console.log(
         '[WebSocketServer][subscribe] Client %s subscribered faild | Client is not exist',
@@ -73,21 +99,20 @@ export class WebSocketServer {
       return;
     }
 
-    if (!client || isExisted) {
-      console.log(
-        '[WebSocketServer][subscribe] Client %s subscribered faild | Client already subscribered',
-        clientId,
-      );
-      return;
+    let clientSet = this.topicToClients.get(topic);
+    if (!clientSet) {
+      clientSet = new Set();
+      clientSet.add(clientId);
+      this.topicToClients.set(topic, clientSet);
+    } else {
+      clientSet.add(clientId);
     }
 
-    const newSubscribers = currentSubscribers.set(clientId, client);
-    this.subscribers.set(topic, newSubscribers);
     console.log(
       '[WebSocketServer][subscribe] Client %s is subscribered to topic %s sucessful | Number of clients: %d',
       clientId,
       topic,
-      newSubscribers.size,
+      clientSet.size,
     );
   }
 
@@ -95,12 +120,12 @@ export class WebSocketServer {
   private unsubscribe(opts: { clientId: string; topic: string }) {
     const { clientId, topic } = opts;
 
-    const currentSubscribers = this.subscribers.get(topic);
-    if (!currentSubscribers) {
+    const clientSet = this.topicToClients.get(topic);
+    if (!clientSet) {
       return;
     }
 
-    const isDeleted = currentSubscribers.delete(clientId);
+    const isDeleted = clientSet.delete(clientId);
     if (!isDeleted) {
       console.log(
         '[WebSocketServer][unsubscribe] Client %s not exist in topic %s',
@@ -110,13 +135,11 @@ export class WebSocketServer {
       return;
     }
 
-    const newSubscribers = currentSubscribers;
-    this.subscribers.set(topic, newSubscribers);
     console.log(
       '[WebSocketServer][unsubscribe] Client %s is unsubscribered from topic %s sucessful | Number of clients: %d',
       clientId,
       topic,
-      newSubscribers.size,
+      clientSet.size,
     );
   }
 
@@ -125,7 +148,7 @@ export class WebSocketServer {
     const { clientId } = opts;
 
     let numOfUnsubscribeTopic = 0;
-    for (const [, subscribers] of this.subscribers) {
+    for (const [_topic, subscribers] of this.topicToClients) {
       const isDeleted = subscribers.delete(clientId);
       if (isDeleted) {
         numOfUnsubscribeTopic++;
@@ -143,64 +166,34 @@ export class WebSocketServer {
   private publish(opts: { topic: string; payload: any }) {
     const { payload, topic } = opts;
 
-    const currentTopicMap = this.subscribers.get(topic);
-    if (!currentTopicMap) {
+    const clientSet = this.topicToClients.get(topic);
+    if (!clientSet) {
       return;
     }
 
+    const message = new WebSocketMessage({
+      messageType: MessageType.PUBLISH,
+      topic,
+      payload,
+    }).serialize();
+
     try {
-      for (const [, client] of currentTopicMap) {
-        client.send(JSON.stringify({ topic, payload }));
+      for (const clientId of clientSet) {
+        const client = this.clients.get(clientId);
+        if (!client) {
+          continue;
+        }
+
+        client.send(message);
       }
+
       console.log(
-        '[WebsocketServer][public] Publish to topic %s successful | Payload: %s',
+        '[WebsocketServer][publish] Publish to topic %s successful | Payload: %s',
         topic,
         payload,
       );
     } catch (e) {
       console.log('[WebsocketServer][publish] Error: %s', e);
-    }
-  }
-
-  // ----------------------------------------------------------------------------------------------------
-  private handleMessageData(opts: { clientId: string; data: WebSocket.RawData }) {
-    const { clientId, data } = opts;
-
-    try {
-      const parsedData = JSON.parse(data.toString());
-      console.log(
-        '[WebSocketServer][handleMessageData] Key: %s | Data: %s',
-        clientId,
-        parsedData,
-      );
-
-      const messageType = get(parsedData, 'messageType', '');
-      switch (messageType) {
-        case MessageType.SUBSCRIBE: {
-          this.subscribe({ clientId, topic: get(parsedData, 'topic', '') });
-          break;
-        }
-        case MessageType.UNSUBSCRIBE: {
-          this.unsubscribe({ clientId, topic: get(parsedData, 'topic', '') });
-          break;
-        }
-        case MessageType.UNSUBSCRIBE_ALL: {
-          this.unsubscribeAll({ clientId });
-          break;
-        }
-        case MessageType.PUBLISH: {
-          this.publish({
-            topic: get(parsedData, 'topic', ''),
-            payload: get(parsedData, 'payload', undefined),
-          });
-          break;
-        }
-        default: {
-          console.log('[WebSocketServer][handleMessageData] Unsupported data');
-        }
-      }
-    } catch (e) {
-      console.log('[WebsocketServer][handleMessageData] Error: %s', e);
     }
   }
 }
