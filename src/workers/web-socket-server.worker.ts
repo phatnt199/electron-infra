@@ -121,12 +121,7 @@ export class WebSocketServer {
     const { clientId, topic } = opts;
 
     const clientSet = this.topicToClients.get(topic);
-    if (!clientSet) {
-      return;
-    }
-
-    const isDeleted = clientSet.delete(clientId);
-    if (!isDeleted) {
+    if (!clientSet || !clientSet.delete(clientId)) {
       console.log(
         '[WebSocketServer][unsubscribe] Client %s not exist in topic %s',
         clientId,
@@ -147,18 +142,17 @@ export class WebSocketServer {
   private unsubscribeAll(opts: { clientId: string }) {
     const { clientId } = opts;
 
-    let numOfUnsubscribeTopic = 0;
-    for (const [_topic, subscribers] of this.topicToClients) {
-      const isDeleted = subscribers.delete(clientId);
-      if (isDeleted) {
-        numOfUnsubscribeTopic++;
+    let count = 0;
+    for (const [_topic, clientSet] of this.topicToClients) {
+      if (clientSet.delete(clientId)) {
+        count++;
       }
     }
 
     console.log(
       '[WebSocketServer][unsubscribeAll] Client %s is unsubscribered from all sucessful | Number of unsubscribered topic: %d',
       clientId,
-      numOfUnsubscribeTopic,
+      count,
     );
   }
 
