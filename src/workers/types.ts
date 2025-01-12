@@ -7,9 +7,3 @@ export enum MessageType {
 
 export type TTopic = string;
 export type TClientId = string;
-
-export type TWebSocketMessage = {
-  type: MessageType;
-  topic: TTopic;
-  payload: any;
-};
