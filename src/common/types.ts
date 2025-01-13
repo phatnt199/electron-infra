@@ -59,10 +59,7 @@ export interface IElectronApplication {
     tags?: Array<BindingTag>,
   ): void;
   datasource<T>(value: DynamicValueProviderClass<T> | Constructor<T>): void;
-  service<T>(value: DynamicValueProviderClass<T> | Constructor<T>): void;
   repository<T>(value: DynamicValueProviderClass<T> | Constructor<T>): void;
-  component<T>(value: DynamicValueProviderClass<T> | Constructor<T>): void;
-  controller<T>(value: DynamicValueProviderClass<T> | Constructor<T>): void;
 
   // ------------------------------------------------------------------------------
   start(): ValueOrPromise<void>;
