@@ -6,10 +6,10 @@ import {
   getError,
 } from '@minimaltech/node-infra';
 import {
+  Application,
   Binding,
   BindingTag,
   Constructor,
-  Context,
   DynamicValueProviderClass,
   MetadataInspector,
 } from '@minimaltech/node-infra/@loopback/core';
@@ -32,7 +32,7 @@ import { WindowManager } from '../services';
 
 // --------------------------------------------------------------------------------
 export abstract class AbstractElectronApplication
-  extends Context
+  extends Application
   implements IElectronApplication
 {
   protected logger: ApplicationLogger;
@@ -263,23 +263,8 @@ export abstract class AbstractElectronApplication
   }
 
   // ------------------------------------------------------------------------------
-  service<T>(value: DynamicValueProviderClass<T> | Constructor<T>) {
-    this.injectable('services', value);
-  }
-
-  // ------------------------------------------------------------------------------
   repository<T>(value: DynamicValueProviderClass<T> | Constructor<T>) {
     this.injectable('repositories', value);
-  }
-
-  // ------------------------------------------------------------------------------
-  component<T>(value: DynamicValueProviderClass<T> | Constructor<T>) {
-    this.injectable('components', value);
-  }
-
-  // ------------------------------------------------------------------------------
-  controller<T>(value: DynamicValueProviderClass<T> | Constructor<T>) {
-    this.injectable('controllers', value);
   }
 
   // ------------------------------------------------------------------------------
@@ -305,7 +290,8 @@ export abstract class AbstractElectronApplication
   }
 
   // ------------------------------------------------------------------------------
-  async start() {
+  override async start() {
+    super.start();
     await this.preConfigure();
     await this.postConfigure();
   }
