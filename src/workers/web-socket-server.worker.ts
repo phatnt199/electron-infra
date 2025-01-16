@@ -1,6 +1,6 @@
 import get from 'lodash/get';
 import WebSocket from 'ws';
-import { MessageType, TClientId, TTopic } from './types';
+import { IWebSocketServerOptions, MessageType, TClientId, TTopic } from './types';
 import { WebSocketMessage } from './web-socket-message';
 
 export class WebSocketServer {
@@ -9,12 +9,16 @@ export class WebSocketServer {
   private server: WebSocket.Server;
   private topicToClients: Map<TTopic, Set<TClientId>> = new Map();
   private clients: Map<TClientId, WebSocket> = new Map();
+  private options: IWebSocketServerOptions;
 
-  constructor(opts: { host: string; port: number; autoRun?: boolean }) {
-    this.host = opts.host;
-    this.port = opts.port;
+  constructor(opts: IWebSocketServerOptions) {
+    const { host, port, autoRun = false } = opts;
 
-    if (opts.autoRun) {
+    this.options = opts;
+    this.host = host;
+    this.port = port;
+
+    if (autoRun) {
       this.start();
     }
   }
@@ -192,11 +196,13 @@ export class WebSocketServer {
         client.send(message);
       }
 
-      console.log(
-        '[WebsocketServer][publish] Publish to topic %s successful | Payload: %s',
-        topic,
-        payload,
-      );
+      if (this.options.doLog) {
+        console.log(
+          '[WebsocketServer][publish] Publish to topic %s successful | Payload: %s',
+          topic,
+          payload,
+        );
+      }
     } catch (e) {
       console.log('[WebsocketServer][publish] Error: %s', e);
     }

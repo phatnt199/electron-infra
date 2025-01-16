@@ -7,3 +7,10 @@ export enum MessageType {
 
 export type TTopic = string;
 export type TClientId = string;
+
+export interface IWebSocketServerOptions {
+  host: string;
+  port: number;
+  autoRun?: boolean;
+  doLog?: boolean;
+}
