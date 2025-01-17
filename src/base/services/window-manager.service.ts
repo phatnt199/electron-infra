@@ -2,6 +2,7 @@ import { BaseService, ResultCodes, getError } from '@minimaltech/node-infra';
 import { IWindowManager } from '../../common';
 import { BrowserWindow, TBrowserWindowOptions } from '../models';
 import { Menu } from 'electron';
+import { debounceTime, fromEvent } from 'rxjs';
 
 export class WindowManager extends BaseService implements IWindowManager {
   private static instance: WindowManager | null;
@@ -34,7 +35,7 @@ export class WindowManager extends BaseService implements IWindowManager {
 
   // -----------------------------------------------------------------------------------
   open(opts: TBrowserWindowOptions) {
-    const { name } = opts;
+    const { name, onClose, onClosed, onReadyToShow, onMove, onResize } = opts;
 
     if (opts.identifier && this.container.has(opts.identifier)) {
       throw getError({
@@ -57,19 +58,42 @@ export class WindowManager extends BaseService implements IWindowManager {
       name,
     );
 
+    // --------------------------------------------------
+    const subscriptionResize = fromEvent(window, 'resize')
+      .pipe(debounceTime(1000))
+      .subscribe(() => {
+        onResize?.(window);
+      });
+    const subscriptionMove = fromEvent(window, 'move')
+      .pipe(debounceTime(1000))
+      .subscribe(() => {
+        onMove?.(window);
+      });
+
+    // --------------------------------------------------
     window.on('closed', () => {
+      onClosed?.(window);
+
       if (!this.container.has(identifier)) {
         return;
       }
 
+      subscriptionResize.unsubscribe();
+      subscriptionMove.unsubscribe();
       this.container.delete(identifier);
     });
 
+    // --------------------------------------------------
     window.on('ready-to-show', () => {
+      onReadyToShow?.(window);
+
       window.show();
     });
 
+    // --------------------------------------------------
     window.on('close', () => {
+      onClose?.(window);
+
       this.container.delete(identifier);
     });
 

@@ -11,6 +11,14 @@ export type TBrowserWindowOptions = BrowserWindowConstructorOptions & {
   name: string;
   url: string;
   menuFactory?: AbstractMenuFactory;
+
+  onClose?: (window: BrowserWindow) => void;
+  onClosed?: (window: BrowserWindow) => void;
+  onReadyToShow?: (window: BrowserWindow) => void;
+  onResize?: (window: BrowserWindow) => void;
+  onResized?: (window: BrowserWindow) => void;
+  onMove?: (window: BrowserWindow) => void;
+  onMoved?: (window: BrowserWindow) => void;
 };
 
 export class BrowserWindow extends ElectronBrowserWindow {
