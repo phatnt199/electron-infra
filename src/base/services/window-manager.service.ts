@@ -37,7 +37,7 @@ export class WindowManager extends BaseService implements IWindowManager {
   open(opts: TBrowserWindowOptions) {
     const {
       name,
-      openDevTool = false,
+      useDevTool = false,
       onClose,
       onClosed,
       onReadyToShow,
@@ -105,7 +105,7 @@ export class WindowManager extends BaseService implements IWindowManager {
       this.container.delete(identifier);
     });
 
-    if (openDevTool) {
+    if (useDevTool) {
       window.webContents.toggleDevTools();
     }
 
