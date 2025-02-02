@@ -10,6 +10,8 @@ export type TBrowserWindowOptions = BrowserWindowConstructorOptions & {
   identifier?: string;
   name: string;
   url: string;
+
+  openDevTool?: boolean;
   menuFactory?: AbstractMenuFactory;
 
   onClose?: (window: BrowserWindow) => void;
