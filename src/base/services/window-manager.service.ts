@@ -83,6 +83,16 @@ export class WindowManager extends BaseService implements IWindowManager {
     window.on('ready-to-show', () => {
       onReadyToShow?.(window);
 
+      window.webContents.on('did-finish-load', () => {
+        this.logger.info(
+          '[open] Identifier: %s | Name: %s | Window READY',
+          identifier,
+          name,
+        );
+
+        window.webContents.send('windowId', identifier);
+      });
+
       window.show();
     });
 
