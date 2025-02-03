@@ -44,7 +44,6 @@ export class WindowManager extends BaseService implements IWindowManager {
       onShow,
       onMove,
       onResize,
-      onShow,
     } = opts;
 
     if (opts.identifier && this.container.has(opts.identifier)) {
