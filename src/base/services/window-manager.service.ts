@@ -41,6 +41,7 @@ export class WindowManager extends BaseService implements IWindowManager {
       onClose,
       onClosed,
       onReadyToShow,
+      onShow,
       onMove,
       onResize,
       onShow,
