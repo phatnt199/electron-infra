@@ -17,6 +17,7 @@ export type TBrowserWindowOptions = BrowserWindowConstructorOptions & {
   onClose?: (window: BrowserWindow) => void;
   onClosed?: (window: BrowserWindow) => void;
   onReadyToShow?: (window: BrowserWindow) => void;
+  onShow?: (window: BrowserWindow) => void;
   onResize?: (window: BrowserWindow) => void;
   onResized?: (window: BrowserWindow) => void;
   onMove?: (window: BrowserWindow) => void;

@@ -41,6 +41,7 @@ export class WindowManager extends BaseService implements IWindowManager {
       onClose,
       onClosed,
       onReadyToShow,
+      onShow,
       onMove,
       onResize,
     } = opts;
@@ -79,6 +80,17 @@ export class WindowManager extends BaseService implements IWindowManager {
       });
 
     // --------------------------------------------------
+    window.on('ready-to-show', () => {
+      onReadyToShow?.(window);
+
+      window.show();
+    });
+
+    window.on('show', () => {
+      onShow?.(window);
+    });
+
+    // --------------------------------------------------
     window.on('closed', () => {
       onClosed?.(window);
 
@@ -91,14 +103,6 @@ export class WindowManager extends BaseService implements IWindowManager {
       this.container.delete(identifier);
     });
 
-    // --------------------------------------------------
-    window.on('ready-to-show', () => {
-      onReadyToShow?.(window);
-
-      window.show();
-    });
-
-    // --------------------------------------------------
     window.on('close', () => {
       onClose?.(window);
 
@@ -134,6 +138,14 @@ export class WindowManager extends BaseService implements IWindowManager {
   getWindows(opts: { identifier?: string; name?: string }) {
     const { identifier, name } = opts;
     const rs: Array<BrowserWindow> = [];
+
+    if (!identifier && !name) {
+      for (const el of this.container.values()) {
+        rs.push(el.window);
+      }
+
+      return rs;
+    }
 
     if (identifier && this.container.has(identifier)) {
       const el = this.container.get(identifier)!;
