@@ -3,5 +3,5 @@ import { BrowserWindow } from '../models';
 
 // --------------------------------------------------------------------------------
 export abstract class AbstractMenuFactory extends BaseService {
-  abstract getMenu(window: BrowserWindow): Electron.Menu;
+  abstract getMenu(window: BrowserWindow): Promise<Electron.Menu>;
 }

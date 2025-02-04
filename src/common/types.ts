@@ -18,7 +18,7 @@ export interface IExposeMetadata {
 export interface IWindowManager {
   getContainer(): Map<string, { window: BrowserWindow; options: TBrowserWindowOptions }>;
 
-  open(opts: TBrowserWindowOptions): BrowserWindow;
+  open(opts: TBrowserWindowOptions): Promise<BrowserWindow>;
   close(opts: { identifier?: string; name?: string }): void;
   getWindows(opts: { identifier?: string; name?: string }): Array<BrowserWindow>;
 }

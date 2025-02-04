@@ -34,7 +34,7 @@ export class WindowManager extends BaseService implements IWindowManager {
   }
 
   // -----------------------------------------------------------------------------------
-  open(opts: TBrowserWindowOptions) {
+  async open(opts: TBrowserWindowOptions) {
     const {
       name,
       useDevTool = false,
@@ -58,7 +58,8 @@ export class WindowManager extends BaseService implements IWindowManager {
     this.container.set(identifier, { window, options: opts });
 
     if (opts.menuFactory) {
-      Menu.setApplicationMenu(opts.menuFactory.getMenu(window));
+      const menu = await opts.menuFactory.getMenu(window);
+      Menu.setApplicationMenu(menu);
     }
 
     this.logger.info(
