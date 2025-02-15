@@ -29,10 +29,6 @@
       "default": "./dist/bridge.js",
       "types": "./dist/bridge.d.ts"
     },
-    "./workers": {
-      "default": "./dist/workers/index.js",
-      "types": "./dist/workers/index.d.ts"
-    },
     "./type-generator": {
       "default": "./dist/typegen.js",
       "types": "./dist/typegen.d.ts"
