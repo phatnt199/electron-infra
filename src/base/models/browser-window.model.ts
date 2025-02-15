@@ -5,7 +5,6 @@ import {
   BrowserWindow as ElectronBrowserWindow,
 } from 'electron';
 import { AbstractMenuFactory } from '../services';
-import { snakeCase } from '@/utilities';
 
 export type TBrowserWindowOptions = BrowserWindowConstructorOptions & {
   identifier?: string;
@@ -34,7 +33,7 @@ export class BrowserWindow extends ElectronBrowserWindow {
     const { identifier, name, url, ...rest } = opts;
     super(rest);
 
-    this.identifier = identifier ?? `${snakeCase(name)}_${getUID()}`;
+    this.identifier = identifier ?? getUID();
     this.name = name;
     this.url = url;
 
