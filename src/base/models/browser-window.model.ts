@@ -22,6 +22,8 @@ export type TBrowserWindowOptions = BrowserWindowConstructorOptions & {
   onResized?: (window: BrowserWindow) => void;
   onMove?: (window: BrowserWindow) => void;
   onMoved?: (window: BrowserWindow) => void;
+  onFocus?: (window: BrowserWindow) => void;
+  onBlur?: (window: BrowserWindow) => void;
 };
 
 export class BrowserWindow extends ElectronBrowserWindow {

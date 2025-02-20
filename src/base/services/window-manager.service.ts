@@ -44,6 +44,8 @@ export class WindowManager extends BaseService implements IWindowManager {
       onShow,
       onMove,
       onResize,
+      onFocus,
+      onBlur,
     } = opts;
 
     if (opts.identifier && this.container.has(opts.identifier)) {
@@ -120,6 +122,16 @@ export class WindowManager extends BaseService implements IWindowManager {
       this.container.delete(identifier);
     });
 
+    // -----------------------------------------------------------------------------------
+    window.on('blur', () => {
+      onBlur?.(window);
+    });
+
+    // -----------------------------------------------------------------------------------
+    window.on('focus', () => {
+      onFocus?.(window);
+    });
+
     if (useDevTool) {
       window.webContents.toggleDevTools();
     }
@@ -143,6 +155,20 @@ export class WindowManager extends BaseService implements IWindowManager {
 
       v.window.close();
     }
+  }
+
+  // -----------------------------------------------------------------------------------
+  closeAll() {
+    this.container.forEach(v => v.window.close());
+  }
+
+  // -----------------------------------------------------------------------------------
+  getWindowByIdentifier(identifier: string) {
+    if (!this.container.has(identifier)) {
+      return null;
+    }
+
+    return this.container.get(identifier)?.window;
   }
 
   // -----------------------------------------------------------------------------------
