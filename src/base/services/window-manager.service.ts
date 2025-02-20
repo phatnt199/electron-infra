@@ -44,6 +44,8 @@ export class WindowManager extends BaseService implements IWindowManager {
       onShow,
       onMove,
       onResize,
+      onBlur,
+      onFocus,
     } = opts;
 
     if (opts.identifier && this.container.has(opts.identifier)) {
@@ -118,6 +120,15 @@ export class WindowManager extends BaseService implements IWindowManager {
       onClose?.(window);
 
       this.container.delete(identifier);
+    });
+
+    // -----------------------------------------------------------------------------------
+    window.on('focus', () => {
+      onFocus?.(window);
+    });
+
+    window.on('blur', () => {
+      onBlur?.(window);
     });
 
     if (useDevTool) {
