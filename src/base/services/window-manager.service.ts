@@ -140,7 +140,7 @@ export class WindowManager extends BaseService implements IWindowManager {
 
   // -----------------------------------------------------------------------------------
   getWindowByIdentifier(identifier: string) {
-    return this.container.get(identifier)?.window;
+    return this.container.get(identifier)?.window ?? null;
   }
 
   // -----------------------------------------------------------------------------------
@@ -180,24 +180,6 @@ export class WindowManager extends BaseService implements IWindowManager {
   // -----------------------------------------------------------------------------------
   getAll() {
     return Array.from(this.container.values()).map(v => v.window);
-  }
-
-  // -----------------------------------------------------------------------------------
-  close(opts: { identifier?: string; name?: string }) {
-    const { identifier, name } = opts;
-
-    if (!identifier && !name) {
-      return;
-    }
-
-    for (const [k, v] of this.container) {
-      const windowName = v.window.getName();
-      if (k !== identifier && name !== windowName) {
-        continue;
-      }
-
-      v.window.close();
-    }
   }
 
   // -----------------------------------------------------------------------------------

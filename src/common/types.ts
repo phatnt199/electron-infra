@@ -19,8 +19,14 @@ export interface IWindowManager {
   getContainer(): Map<string, { window: BrowserWindow; options: TBrowserWindowOptions }>;
 
   open(opts: TBrowserWindowOptions): Promise<BrowserWindow>;
-  close(opts: { identifier?: string; name?: string }): void;
+
+  getWindowByIdentifier(identifier: string): BrowserWindow | null;
   getWindows(opts: { identifier?: string; name?: string }): Array<BrowserWindow>;
+  getAll(): Array<BrowserWindow>;
+
+  closeByIdentifier(identifier: string): void;
+  closeWindows(opts: { identifier?: string; name?: string }): void;
+  closeAll(): void;
 }
 
 // ----------------------------------------------------------------------
