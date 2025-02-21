@@ -139,21 +139,8 @@ export class WindowManager extends BaseService implements IWindowManager {
   }
 
   // -----------------------------------------------------------------------------------
-  close(opts: { identifier?: string; name?: string }) {
-    const { identifier, name } = opts;
-
-    if (!identifier && !name) {
-      return;
-    }
-
-    for (const [k, v] of this.container) {
-      const windowName = v.window.getName();
-      if (k !== identifier && name !== windowName) {
-        continue;
-      }
-
-      v.window.close();
-    }
+  getWindowByIdentifier(identifier: string) {
+    return this.container.get(identifier)?.window;
   }
 
   // -----------------------------------------------------------------------------------
@@ -188,5 +175,50 @@ export class WindowManager extends BaseService implements IWindowManager {
     }
 
     return rs;
+  }
+
+  // -----------------------------------------------------------------------------------
+  getAll() {
+    return Array.from(this.container.values()).map(v => v.window);
+  }
+
+  // -----------------------------------------------------------------------------------
+  close(opts: { identifier?: string; name?: string }) {
+    const { identifier, name } = opts;
+
+    if (!identifier && !name) {
+      return;
+    }
+
+    for (const [k, v] of this.container) {
+      const windowName = v.window.getName();
+      if (k !== identifier && name !== windowName) {
+        continue;
+      }
+
+      v.window.close();
+    }
+  }
+
+  // -----------------------------------------------------------------------------------
+  closeByIdentifier(identifier: string) {
+    const window = this.container.get(identifier)?.window;
+    if (window) {
+      window.close();
+    }
+  }
+
+  // -----------------------------------------------------------------------------------
+  closeWindows(opts: { identifier?: string; name?: string }) {
+    const { identifier, name } = opts;
+
+    this.getWindows({ identifier, name }).forEach(w => w.close());
+  }
+
+  // -----------------------------------------------------------------------------------
+  closeAll() {
+    for (const el of this.container.values()) {
+      el.window.close();
+    }
   }
 }
