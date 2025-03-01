@@ -1,7 +1,10 @@
 import { IpcRendererEvent, ipcRenderer } from 'electron';
+import { hrTimeToPerformance } from './utilities/performance.utilities';
 
 // ---------------------------------------------------------------------
-const system = {};
+const system = {
+  performance: () => hrTimeToPerformance(),
+};
 
 // ---------------------------------------------------------------------
 const preference = {};
