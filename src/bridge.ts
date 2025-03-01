@@ -3,7 +3,7 @@ import { hrTimeToPerformance } from './utilities/performance.utilities';
 
 // ---------------------------------------------------------------------
 const system = {
-  performance: () => hrTimeToPerformance()
+  performance: () => hrTimeToPerformance(),
 };
 
 // ---------------------------------------------------------------------
