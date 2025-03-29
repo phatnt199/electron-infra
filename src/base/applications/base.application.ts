@@ -60,6 +60,7 @@ export abstract class AbstractElectronApplication
   // Events Binding
   // ------------------------------------------------------------------------------
   abstract onBeforeMigrate(): ValueOrPromise<void>;
+  abstract onMigrate(): ValueOrPromise<void>;
   abstract onAfterMigrate(): ValueOrPromise<void>;
 
   abstract onWillFinishLaunching(): void;
@@ -281,15 +282,42 @@ export abstract class AbstractElectronApplication
     }
 
     this.on('before-migrate', () => {
-      Promise.resolve(this.onBeforeMigrate()).then(() => {
-        this.emit('after-migrate');
-      });
+      Promise.resolve(this.onBeforeMigrate())
+        .then(() => {
+          this.emit('migrate');
+        })
+        .catch(error => {
+          this.logger.error(
+            '[onBeforeMigrate] Error while handling before migrate application | Error: %s',
+            error,
+          );
+        });
+    });
+
+    this.on('migrate', () => {
+      Promise.resolve(this.onMigrate())
+        .then(() => {
+          this.emit('after-migrate');
+        })
+        .catch(error => {
+          this.logger.error(
+            '[migrate] Error while handling migrate application | Error: %s',
+            error,
+          );
+        });
     });
 
     this.on('after-migrate', () => {
-      Promise.resolve(this.onAfterMigrate()).then(() => {
-        this.onReady();
-      });
+      Promise.resolve(this.onAfterMigrate())
+        .then(() => {
+          this.onReady();
+        })
+        .catch(error => {
+          this.logger.error(
+            '[onAfterMigrate] Error while handling after migrate application | Error: %s',
+            error,
+          );
+        });
     });
 
     this.application.on('will-finish-launching', () => this.onWillFinishLaunching());
@@ -320,6 +348,10 @@ export abstract class AbstractElectronApplication
 // --------------------------------------------------------------------------------
 export abstract class BaseElectronApplication extends AbstractElectronApplication {
   override onBeforeMigrate(): ValueOrPromise<void> {
+    return;
+  }
+
+  override onMigrate(): ValueOrPromise<void> {
     return;
   }
 
