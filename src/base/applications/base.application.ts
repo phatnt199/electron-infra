@@ -321,9 +321,8 @@ export abstract class AbstractElectronApplication
     });
 
     this.application.on('will-finish-launching', () => this.onWillFinishLaunching());
-    this.application.on('ready', (_event, _launchInfo) => () => {
+    this.application.on('ready', (_event, _launchInfo) => {
       this.emit('before-migrate');
-      // this.onReady(event, launchInfo)
     });
     this.application.on('second-instance', (event, args, dir, additionalData) =>
       this.onSecondApplicationInstance(event, args, dir, additionalData),
