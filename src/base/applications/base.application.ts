@@ -59,11 +59,15 @@ export abstract class AbstractElectronApplication
   // ------------------------------------------------------------------------------
   // Events Binding
   // ------------------------------------------------------------------------------
+  abstract onBeforeMigrate(): ValueOrPromise<void>;
+  abstract onAfterMigrate(): ValueOrPromise<void>;
+
   abstract onWillFinishLaunching(): void;
-  abstract onReady(
-    event: Electron.Event,
-    launchInfo: Record<string, any> | Electron.NotificationResponse,
-  ): void;
+
+  abstract onReady(): void;
+  // event: Electron.Event,
+  // launchInfo: Record<string, any> | Electron.NotificationResponse,
+
   abstract onSecondApplicationInstance(
     event: Electron.Event,
     args: string[],
@@ -74,6 +78,7 @@ export abstract class AbstractElectronApplication
     event: Electron.Event,
     window: Electron.BrowserWindow,
   ): void;
+
   abstract onAllWindowsClosed(): void;
   abstract onWillQuit(event: Electron.Event): void;
   abstract onBeforeQuit(event: Electron.Event): void;
@@ -275,8 +280,23 @@ export abstract class AbstractElectronApplication
       });
     }
 
+    this.on('before-migrate', () => {
+      Promise.resolve(this.onBeforeMigrate()).then(() => {
+        this.emit('after-migrate');
+      });
+    });
+
+    this.on('after-migrate', () => {
+      Promise.resolve(this.onAfterMigrate()).then(() => {
+        this.onReady();
+      });
+    });
+
     this.application.on('will-finish-launching', () => this.onWillFinishLaunching());
-    this.application.on('ready', (event, launchInfo) => this.onReady(event, launchInfo));
+    this.application.on('ready', (_event, _launchInfo) => () => {
+      this.emit('before-migrate');
+      // this.onReady(event, launchInfo)
+    });
     this.application.on('second-instance', (event, args, dir, additionalData) =>
       this.onSecondApplicationInstance(event, args, dir, additionalData),
     );
@@ -299,6 +319,14 @@ export abstract class AbstractElectronApplication
 
 // --------------------------------------------------------------------------------
 export abstract class BaseElectronApplication extends AbstractElectronApplication {
+  override onBeforeMigrate(): ValueOrPromise<void> {
+    return;
+  }
+
+  override onAfterMigrate(): ValueOrPromise<void> {
+    return;
+  }
+
   override onWillFinishLaunching(): void {
     this.logger.debug('[onWillFinishLaunching] Application finishing launching');
   }
