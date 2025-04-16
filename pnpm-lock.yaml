@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@minimaltech/node-infra':
-        specifier: ^0.4.0
-        version: 0.4.0(socket.io-adapter@2.5.5)
+        specifier: ^0.5.3-0
+        version: 0.5.3-0(socket.io-adapter@2.5.5)
       '@reduxjs/toolkit':
         specifier: ^2.5.0
         version: 2.5.0
@@ -321,8 +321,8 @@ packages:
     peerDependencies:
       '@loopback/core': ^6.0.0
 
-  '@loopback/filter@5.0.8':
-    resolution: {integrity: sha512-WqHXTuMuR/tZzP8wcdMi9qrIF6dSoRGpq5Vqvu7CUFQUludbTJfvf5ol4x1yL5QmrrGEb+hyGx6DATexhsKJxw==}
+  '@loopback/filter@5.0.11':
+    resolution: {integrity: sha512-MzPyIToWslruK7Lm5BPPuQ+RxM+3N7KSzlFSo8dszYm30hf7dVXt2z2s7iw8EEhu5ccaUFCWT/X3K1p8fBkJUQ==}
     engines: {node: 18 || 20 || 22}
 
   '@loopback/http-server@6.0.9':
@@ -398,8 +398,8 @@ packages:
   '@minimaltech/eslint-node@0.1.15':
     resolution: {integrity: sha512-v8Khu/0Ub5C+icFUypNDd9vafGlCsD78ZV+2SxeI+s1WK0bZ23pc7glO11acgLFR2mLyW98t45FPVZWcW5vZHA==}
 
-  '@minimaltech/node-infra@0.4.0':
-    resolution: {integrity: sha512-Kjd48cLGlCiJQePTMVQPR3zHCNhCmV/E+Cci6PgjkSReucfNEJJnFwxRlU08pEABTwiTWWZo273V02lUbj2k2Q==}
+  '@minimaltech/node-infra@0.5.3-0':
+    resolution: {integrity: sha512-J6wkeBsHlAz9M7JPWdSRuUpMJft3YJJBJlRAT007Q7f6k+YPtGFhXa4IX2oLvRFTaeIYZDZcG5s+8+wDEFFZcw==}
     engines: {node: '>=18'}
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.3':
@@ -603,8 +603,8 @@ packages:
   '@types/lodash@4.17.13':
     resolution: {integrity: sha512-lfx+dftrEZcdBPczf9d0Qv0x+j/rfNCMuC6OcfXmO8gkfeNAY88PgKUbvG56whcN23gc27yenwF6oJZXGFpYxg==}
 
-  '@types/luxon@3.4.2':
-    resolution: {integrity: sha512-TifLZlFudklWlMBfhubvgqTXRzLDI5pCbGa4P8a3wPyUQSW+1xQ5eDsreP9DWHX3tjq1ke96uYG/nwundroWcA==}
+  '@types/luxon@3.6.2':
+    resolution: {integrity: sha512-R/BdP7OxEMc44l2Ex5lSXHoIXTB2JLNa3y2QISIbr58U/YcsffyQrYW//hZSdrfxrjRZj3GcUoxMPGdO8gSYuw==}
 
   '@types/mime@1.3.5':
     resolution: {integrity: sha512-/pyBZWSLD2n0dcHE3hq8s8ZvcETHtEuF+3E7XVt0Ig2nvsVQXdghHVcEkIWjy9A0wKfTn97a/PSDYohKIlnP/w==}
@@ -1165,8 +1165,9 @@ packages:
     resolution: {integrity: sha512-p0SaNjrHOnQeR8/VnfGbmg9te2kfyYSQ7Sc/j/6DtPL3JQvKxmjO9TSjNFpujqV3vEYYBvNNvXSxzyksBWAx1Q==}
     engines: {node: '>=12.0.0'}
 
-  cron@3.3.2:
-    resolution: {integrity: sha512-7o2PH9vKRd4PxB8c2GsHRozfHYT+gIhZG0DI+vzGOdWo42mofO/ooYnyU0CCh27aKzCrUKMAwAwi7xJ84xKSug==}
+  cron@4.3.0:
+    resolution: {integrity: sha512-ciiYNLfSlF9MrDqnbMdRWFiA6oizSF7kA1osPP9lRzNu0Uu+AWog1UKy7SkckiDY2irrNjeO6qLyKnXC8oxmrw==}
+    engines: {node: '>=18.x'}
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -2176,6 +2177,10 @@ packages:
 
   luxon@3.5.0:
     resolution: {integrity: sha512-rh+Zjr6DNfUYR3bPwJEnuwDdqMbxZW7LOQfUN4B54+Cl+0o5zaU9RJ6bcidfDtC1cWCZXQ+nvX8bf6bAji37QQ==}
+    engines: {node: '>=12'}
+
+  luxon@3.6.1:
+    resolution: {integrity: sha512-tJLxrKJhO2ukZ5z0gyjY1zPh3Rh88Ej9P7jNrZiHMUXHae1yvI2imgOZtL1TO8TW6biMMKfTtAOoEJANgtWBMQ==}
     engines: {node: '>=12'}
 
   make-dir@3.1.0:
@@ -3793,7 +3798,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@loopback/filter@5.0.8':
+  '@loopback/filter@5.0.11':
     dependencies:
       tslib: 2.8.1
 
@@ -3847,7 +3852,7 @@ snapshots:
   '@loopback/repository@7.0.9(@loopback/core@6.1.6)':
     dependencies:
       '@loopback/core': 6.1.6
-      '@loopback/filter': 5.0.8
+      '@loopback/filter': 5.0.11
       '@types/debug': 4.1.12
       debug: 4.4.0(supports-color@8.1.1)
       lodash: 4.17.21
@@ -3954,7 +3959,7 @@ snapshots:
       - supports-color
       - typescript
 
-  '@minimaltech/node-infra@0.4.0(socket.io-adapter@2.5.5)':
+  '@minimaltech/node-infra@0.5.3-0(socket.io-adapter@2.5.5)':
     dependencies:
       '@grpc/grpc-js': 1.12.5
       '@grpc/proto-loader': 0.7.13
@@ -3964,6 +3969,7 @@ snapshots:
       '@loopback/authorization': 0.15.9(@loopback/core@6.1.6)
       '@loopback/boot': 7.0.9(@loopback/core@6.1.6)
       '@loopback/core': 6.1.6
+      '@loopback/filter': 5.0.11
       '@loopback/http-server': 6.0.9
       '@loopback/metadata': 7.0.9
       '@loopback/repository': 7.0.9(@loopback/core@6.1.6)
@@ -3978,7 +3984,7 @@ snapshots:
       axios: 1.7.9
       bullmq: 5.34.6
       casbin: 5.36.0
-      cron: 3.3.2
+      cron: 4.3.0
       dayjs: 1.11.13
       dotenv-flow: 4.1.0
       ejs: 3.1.10
@@ -4211,7 +4217,7 @@ snapshots:
 
   '@types/lodash@4.17.13': {}
 
-  '@types/luxon@3.4.2': {}
+  '@types/luxon@3.6.2': {}
 
   '@types/mime@1.3.5': {}
 
@@ -4943,10 +4949,10 @@ snapshots:
     dependencies:
       luxon: 3.5.0
 
-  cron@3.3.2:
+  cron@4.3.0:
     dependencies:
-      '@types/luxon': 3.4.2
-      luxon: 3.5.0
+      '@types/luxon': 3.6.2
+      luxon: 3.6.1
 
   cross-spawn@7.0.6:
     dependencies:
@@ -6025,6 +6031,8 @@ snapshots:
       yallist: 3.1.1
 
   luxon@3.5.0: {}
+
+  luxon@3.6.1: {}
 
   make-dir@3.1.0:
     dependencies:
