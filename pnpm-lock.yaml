@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@minimaltech/node-infra':
-        specifier: ^0.5.3-0
-        version: 0.5.3-0(socket.io-adapter@2.5.5)
+        specifier: ^0.5.5
+        version: 0.5.5(socket.io-adapter@2.5.5)
       '@reduxjs/toolkit':
         specifier: ^2.5.0
         version: 2.5.0
@@ -398,8 +398,8 @@ packages:
   '@minimaltech/eslint-node@0.1.15':
     resolution: {integrity: sha512-v8Khu/0Ub5C+icFUypNDd9vafGlCsD78ZV+2SxeI+s1WK0bZ23pc7glO11acgLFR2mLyW98t45FPVZWcW5vZHA==}
 
-  '@minimaltech/node-infra@0.5.3-0':
-    resolution: {integrity: sha512-J6wkeBsHlAz9M7JPWdSRuUpMJft3YJJBJlRAT007Q7f6k+YPtGFhXa4IX2oLvRFTaeIYZDZcG5s+8+wDEFFZcw==}
+  '@minimaltech/node-infra@0.5.5':
+    resolution: {integrity: sha512-6giISczKgbpvkJfYr7xhPImVFV+2T+fEQaxm/0IDvJ4GWuACtACUqWU5rf/EpT7+fWkYWAM/27sWbfzA6EdT5A==}
     engines: {node: '>=18'}
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.3':
@@ -2174,10 +2174,6 @@ packages:
 
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
-
-  luxon@3.5.0:
-    resolution: {integrity: sha512-rh+Zjr6DNfUYR3bPwJEnuwDdqMbxZW7LOQfUN4B54+Cl+0o5zaU9RJ6bcidfDtC1cWCZXQ+nvX8bf6bAji37QQ==}
-    engines: {node: '>=12'}
 
   luxon@3.6.1:
     resolution: {integrity: sha512-tJLxrKJhO2ukZ5z0gyjY1zPh3Rh88Ej9P7jNrZiHMUXHae1yvI2imgOZtL1TO8TW6biMMKfTtAOoEJANgtWBMQ==}
@@ -3959,7 +3955,7 @@ snapshots:
       - supports-color
       - typescript
 
-  '@minimaltech/node-infra@0.5.3-0(socket.io-adapter@2.5.5)':
+  '@minimaltech/node-infra@0.5.5(socket.io-adapter@2.5.5)':
     dependencies:
       '@grpc/grpc-js': 1.12.5
       '@grpc/proto-loader': 0.7.13
@@ -4947,7 +4943,7 @@ snapshots:
 
   cron-parser@4.9.0:
     dependencies:
-      luxon: 3.5.0
+      luxon: 3.6.1
 
   cron@4.3.0:
     dependencies:
@@ -6029,8 +6025,6 @@ snapshots:
   lru-cache@5.1.1:
     dependencies:
       yallist: 3.1.1
-
-  luxon@3.5.0: {}
 
   luxon@3.6.1: {}
 
