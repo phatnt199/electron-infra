@@ -48,7 +48,7 @@ interface IAutoUpdaterOptions {
     | { signType: 'trusted-ca' }
     | {
         signType: 'self-sign';
-        verifySignature: <T extends any = any>(opts: {
+        verifySignature: <T>(opts: {
           publishers: Array<string>;
           tmpPath: string;
           signature: T;
@@ -137,7 +137,7 @@ export abstract class AbstractElectronApplication
   }
 
   bindAutoUpdater(): ValueOrPromise<void> {
-    if (!this.autoUpdaterOptions || !this.autoUpdaterOptions.use) {
+    if (!this.autoUpdaterOptions?.use) {
       this.logger.warn('[bindAutoUpdater] Ignore configuring Application Auto Updater!');
       return;
     }
