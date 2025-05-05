@@ -561,15 +561,13 @@ export abstract class BaseElectronApplication extends AbstractElectronApplicatio
       error,
     );
 
-    const userChoice = this.getDialog().showMessageBoxSync({
+    this.getDialog().showMessageBoxSync({
       type: 'error',
       title: 'Update Error',
       message: `[onUpdateError] Update Error | Failed to update new version\nError: ${error.name} - ${error.message}`,
     });
 
-    if (userChoice) {
-      this.application.quit();
-    }
+    this.application.quit();
   }
 
   override onCheckingForUpdate(): ValueOrPromise<void> {
