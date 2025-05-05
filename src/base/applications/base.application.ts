@@ -173,9 +173,7 @@ export abstract class AbstractElectronApplication
           unescapedTempUpdateFile,
         ) => {
           if (!this.autoUpdaterOptions) {
-            return Promise.resolve(
-              'Invalid verifySelfCodeSigningSignature implementation!',
-            );
+            return 'Invalid verifySelfCodeSigningSignature implementation!';
           }
 
           try {
@@ -206,8 +204,7 @@ export abstract class AbstractElectronApplication
               autoUpdaterOptions: this.autoUpdaterOptions,
             });
 
-            this.logger.info('[verifyUpdateCodeSignature] Rs: %j', verifyRs);
-
+            this.logger.info('[verifyUpdateCodeSignature] verifyRs: %j', verifyRs);
             return verifyRs;
           } catch (error) {
             const message =
