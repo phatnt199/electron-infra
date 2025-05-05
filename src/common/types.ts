@@ -30,6 +30,24 @@ export interface IWindowManager {
   closeAll(): void;
 }
 
+// --------------------------------------------------------------------------------
+export interface IAutoUpdaterOptions<S> {
+  use: true;
+  autoInstallAfterDownloaded: boolean;
+  verify:
+    | { signType: 'trusted-ca' }
+    | {
+        signType: 'self-sign';
+        doVerifySignToolStatus?: boolean;
+        validSubjects?: Array<string>;
+        verifySignature?: (opts: {
+          publishers: Array<string>;
+          tmpPath: string;
+          signature: S;
+        }) => Promise<string | null>;
+      };
+}
+
 // ----------------------------------------------------------------------
 export interface IElectronUpdater {
   bindAutoUpdater(): ValueOrPromise<void>;
