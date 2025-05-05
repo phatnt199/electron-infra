@@ -52,7 +52,7 @@ interface IAutoUpdaterOptions<S> {
         signType: 'self-sign';
         doVerifySignToolStatus?: boolean;
         validSubjects?: Array<string>;
-        verifySignature: (opts: {
+        verifySignature?: (opts: {
           publishers: Array<string>;
           tmpPath: string;
           signature: S;
@@ -193,8 +193,8 @@ export abstract class AbstractElectronApplication
         }
 
         const { verifySignature } = verifyOptions;
-        const nsisUpdater = this.autoUpdater as NsisUpdater;
 
+        const nsisUpdater = this.autoUpdater as NsisUpdater;
         nsisUpdater.verifyUpdateCodeSignature = (publishers, unescapedTempUpdateFile) => {
           try {
             const tmpPath = path.normalize(unescapedTempUpdateFile.replace(/'/g, "''"));
@@ -217,7 +217,7 @@ export abstract class AbstractElectronApplication
               { shell: true, timeout: 20_000 },
             );
 
-            return verifySignature({
+            return (verifySignature ?? this.verifySignature)({
               publishers,
               tmpPath,
               signature: JSON.parse(signatureAuthRs.toString('utf8')),
