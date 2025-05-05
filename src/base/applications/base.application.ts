@@ -1,10 +1,12 @@
 import { ExposeVerbs } from '@/common/constants';
 import { BindingKeys } from '@/common/keys';
 import {
+  AnyType,
   ApplicationLogger,
   LoggerFactory,
   ResultCodes,
   ValueOrPromise,
+  dayjs,
   getError,
 } from '@minimaltech/node-infra';
 import {
@@ -41,17 +43,19 @@ import {
 import { WindowManager } from '../services';
 
 // --------------------------------------------------------------------------------
-interface IAutoUpdaterOptions {
+interface IAutoUpdaterOptions<S> {
   use: true;
   autoInstallAfterDownloaded: boolean;
   verify:
     | { signType: 'trusted-ca' }
     | {
         signType: 'self-sign';
-        verifySignature: <T>(opts: {
+        doVerifySignToolStatus?: boolean;
+        validSubjects?: Array<string>;
+        verifySignature: (opts: {
           publishers: Array<string>;
           tmpPath: string;
-          signature: T;
+          signature: S;
         }) => Promise<string | null>;
       };
 }
@@ -68,7 +72,7 @@ export abstract class AbstractElectronApplication
 
   protected windowManager: IWindowManager;
 
-  protected autoUpdaterOptions?: { use: false } | IAutoUpdaterOptions;
+  protected autoUpdaterOptions?: { use: false } | IAutoUpdaterOptions<AnyType>;
   // routes: Map<string | symbol, Function>;
 
   // ------------------------------------------------------------------------------
@@ -80,7 +84,7 @@ export abstract class AbstractElectronApplication
 
     windowManager?: IWindowManager;
 
-    autoUpdaterOptions?: IAutoUpdaterOptions;
+    autoUpdaterOptions?: IAutoUpdaterOptions<AnyType>;
   }) {
     super();
     this.logger = LoggerFactory.getLogger([opts.scope]);
@@ -136,6 +140,16 @@ export abstract class AbstractElectronApplication
     return this.autoUpdater;
   }
 
+  verifySignature(_opts: {
+    publishers: Array<string>;
+    tmpPath: string;
+    signature: AnyType;
+  }): Promise<string | null> {
+    throw getError({
+      message: '[verifySignature] Missing method implementation',
+    });
+  }
+
   bindAutoUpdater(): ValueOrPromise<void> {
     if (!this.autoUpdaterOptions?.use) {
       this.logger.warn('[bindAutoUpdater] Ignore configuring Application Auto Updater!');
@@ -181,8 +195,15 @@ export abstract class AbstractElectronApplication
         const { verifySignature } = verifyOptions;
         const nsisUpdater = this.autoUpdater as NsisUpdater;
 
-        nsisUpdater.verifyUpdateCodeSignature = (publishers, tmpPath) => {
+        nsisUpdater.verifyUpdateCodeSignature = (publishers, unescapedTempUpdateFile) => {
           try {
+            const tmpPath = path.normalize(unescapedTempUpdateFile.replace(/'/g, "''"));
+            this.logger.info(
+              '[verifyUpdateCodeSignature] Verifying signature | publisherNames: %s | tmpPath: %s',
+              publishers,
+              tmpPath,
+            );
+
             const signatureAuthRs = execFileSync(
               `set "PSModulePath=" & chcp 65001 >NUL & powershell.exe`,
               [
@@ -639,5 +660,64 @@ export abstract class BaseElectronApplication extends AbstractElectronApplicatio
       updateInfo,
     );
     return this.autoUpdater.quitAndInstall();
+  }
+
+  override async verifySignature(opts: {
+    publishers: Array<string>;
+    tmpPath: string;
+    signature: AnyType;
+  }) {
+    if (!this.autoUpdaterOptions?.use) {
+      return null;
+    }
+
+    const { signType } = this.autoUpdaterOptions.verify;
+    if (signType !== 'self-sign') {
+      return `[verifySignature] Not allow custom verifySignature for non self-sign verification | signType: ${signType}`;
+    }
+
+    // Validate OS SignTool Result
+    const { doVerifySignToolStatus = true, validSubjects = null } =
+      this.autoUpdaterOptions.verify;
+    const { signature } = opts;
+
+    if (doVerifySignToolStatus && signature.Status !== 0) {
+      return `[verifyUpdateCodeSignature] Invalid signature status | status: ${signature.Status} - ${signature.StatusMessage}`;
+    }
+
+    // Validate Certificate Issuer
+    const subject = signature?.SignerCertificate?.Subject || '';
+    if (validSubjects?.length) {
+      const validCNs = validSubjects.map(cn => `CN=${cn}`);
+
+      const isValidCN = validCNs.findIndex(cn => subject.includes(cn)) > -1;
+
+      if (!isValidCN) {
+        return `[verifyUpdateCodeSignature] Invalid certificate subject | expected: ${validCNs} | subject: ${subject}`;
+      }
+    }
+
+    // Validate Certificate Period
+    const certNotBefore = signature?.SignerCertificate?.NotBefore;
+    const certNotAfter = signature?.SignerCertificate?.NotAfter;
+
+    if (!certNotBefore || !certNotAfter) {
+      return 'Missing certificate validity period (NotBefore or NotAfter)';
+    }
+
+    const notBefore = parseInt(certNotBefore.replace(/[^0-9]/g, ''), 10);
+    const notAfter = parseInt(certNotAfter.replace(/[^0-9]/g, ''), 10);
+    const now = new Date().getTime();
+
+    if (now < notBefore) {
+      return `Certificate is not valid yet. Valid from: ${dayjs(notBefore).toISOString()}`;
+    }
+
+    if (now > notAfter) {
+      return `Certificate has expired. Valid until: ${dayjs(notAfter).toISOString()}`;
+    }
+
+    this.logger.warn('[verifySignature] signature message: %s', signature.StatusMessage);
+    return null;
   }
 }
