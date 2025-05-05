@@ -168,7 +168,10 @@ export abstract class AbstractElectronApplication
         const { verifySignature } = verifyOptions;
 
         const nsisUpdater = this.autoUpdater as NsisUpdater;
-        nsisUpdater.verifyUpdateCodeSignature = (publishers, unescapedTempUpdateFile) => {
+        nsisUpdater.verifyUpdateCodeSignature = async (
+          publishers,
+          unescapedTempUpdateFile,
+        ) => {
           if (!this.autoUpdaterOptions) {
             return Promise.resolve(
               'Invalid verifySelfCodeSigningSignature implementation!',
@@ -196,12 +199,16 @@ export abstract class AbstractElectronApplication
               { shell: true, timeout: 20_000 },
             );
 
-            return (verifySignature ?? verifySelfCodeSigningSignature)({
+            const verifyRs = await (verifySignature ?? verifySelfCodeSigningSignature)({
               publishers,
               tmpPath,
               signature: JSON.parse(signatureAuthRs.toString('utf8')),
               autoUpdaterOptions: this.autoUpdaterOptions,
             });
+
+            this.logger.info('[verifyUpdateCodeSignature] Rs: %j', verifyRs);
+
+            return verifyRs;
           } catch (error) {
             const message =
               '[verifyUpdateCodeSignature] Failed to get authentication code signature!';
