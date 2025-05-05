@@ -1,3 +1,5 @@
+import { ExposeVerbs } from '@/common/constants';
+import { BindingKeys } from '@/common/keys';
 import {
   ApplicationLogger,
   LoggerFactory,
@@ -17,12 +19,20 @@ import {
   IpcMainEvent,
   IpcMainInvokeEvent,
   app as crossProcessApplication,
+  dialog,
   ipcMain,
 } from 'electron';
+import {
+  AppUpdater,
+  NsisUpdater,
+  ProgressInfo,
+  UpdateInfo,
+  autoUpdater as crossProcessUpdater,
+} from 'electron-updater';
 import fs from 'fs';
+import { execFileSync } from 'node:child_process';
+import os from 'node:os';
 import path from 'path';
-import { ExposeVerbs } from '../..';
-import { BindingKeys } from '../../common/keys';
 import {
   IElectronApplication,
   IExposeMetadata,
@@ -31,29 +41,57 @@ import {
 import { WindowManager } from '../services';
 
 // --------------------------------------------------------------------------------
+interface IAutoUpdaterOptions {
+  use: true;
+  autoInstallAfterDownloaded: boolean;
+  verify:
+    | { signType: 'trusted-ca' }
+    | {
+        signType: 'self-sign';
+        verifySignature: <T extends any = any>(opts: {
+          publishers: Array<string>;
+          tmpPath: string;
+          signature: T;
+        }) => Promise<string | null>;
+      };
+}
+
+// --------------------------------------------------------------------------------
 export abstract class AbstractElectronApplication
   extends Application
   implements IElectronApplication
 {
   protected logger: ApplicationLogger;
 
-  application: Electron.App;
-  windowManager: IWindowManager;
+  protected application: Electron.App;
+  protected autoUpdater: AppUpdater;
+
+  protected windowManager: IWindowManager;
+
+  protected autoUpdaterOptions?: { use: false } | IAutoUpdaterOptions;
   // routes: Map<string | symbol, Function>;
 
   // ------------------------------------------------------------------------------
   constructor(opts: {
     scope: string;
 
-    windowManager?: IWindowManager;
     application?: Electron.App;
+    autoUpdater?: AppUpdater;
+
+    windowManager?: IWindowManager;
+
+    autoUpdaterOptions?: IAutoUpdaterOptions;
   }) {
     super();
     this.logger = LoggerFactory.getLogger([opts.scope]);
 
     // this.routes = new Map<string | symbol, Function>();
-    this.windowManager = opts.windowManager ?? WindowManager.getInstance();
     this.application = opts.application ?? crossProcessApplication;
+    this.autoUpdater = opts.autoUpdater ?? crossProcessUpdater;
+
+    this.windowManager = opts.windowManager ?? WindowManager.getInstance();
+
+    this.autoUpdaterOptions = opts.autoUpdaterOptions;
   }
 
   // ------------------------------------------------------------------------------
@@ -66,8 +104,6 @@ export abstract class AbstractElectronApplication
   abstract onWillFinishLaunching(): void;
 
   abstract onReady(): void;
-  // event: Electron.Event,
-  // launchInfo: Record<string, any> | Electron.NotificationResponse,
 
   abstract onSecondApplicationInstance(
     event: Electron.Event,
@@ -89,8 +125,109 @@ export abstract class AbstractElectronApplication
   abstract bindContext(): ValueOrPromise<void>;
 
   // ------------------------------------------------------------------------------
+  abstract onCheckingForUpdate(): ValueOrPromise<void>;
+  abstract onUpdateAvailable(updateInfo: UpdateInfo): ValueOrPromise<void>;
+  abstract onUpdateNotAvailable(updateInfo: UpdateInfo): ValueOrPromise<void>;
+  abstract onDownloadProgress(progress: ProgressInfo): ValueOrPromise<void>;
+  abstract onUpdateDownloaded(updateInfo: UpdateInfo): ValueOrPromise<void>;
+  abstract onUpdateError(error: Error): ValueOrPromise<void>;
+
+  getAutoUpdater(): AppUpdater {
+    return this.autoUpdater;
+  }
+
+  bindAutoUpdater(): ValueOrPromise<void> {
+    if (!this.autoUpdaterOptions || !this.autoUpdaterOptions.use) {
+      this.logger.warn('[bindAutoUpdater] Ignore configuring Application Auto Updater!');
+      return;
+    }
+
+    this.autoUpdater.autoDownload = true;
+    this.autoUpdater.autoInstallOnAppQuit = true;
+    this.autoUpdater.autoRunAppAfterInstall = true;
+
+    this.autoUpdater.on('error', error => {
+      return this.onUpdateError(error);
+    });
+
+    this.autoUpdater.on('checking-for-update', () => {
+      return this.onCheckingForUpdate();
+    });
+
+    this.autoUpdater.on('update-available', updateInfo => {
+      this.onUpdateAvailable(updateInfo);
+    });
+
+    this.autoUpdater.on('update-not-available', updateInfo => {
+      this.onUpdateNotAvailable(updateInfo);
+    });
+
+    this.autoUpdater.on('download-progress', progress => {
+      this.onDownloadProgress(progress);
+    });
+
+    this.autoUpdater.on('update-downloaded', updateInfo => {
+      this.onUpdateDownloaded(updateInfo);
+    });
+
+    const platform = os.platform();
+    switch (platform) {
+      case 'win32': {
+        const verifyOptions = this.autoUpdaterOptions.verify;
+        if (verifyOptions.signType !== 'self-sign') {
+          break;
+        }
+
+        const { verifySignature } = verifyOptions;
+        const nsisUpdater = this.autoUpdater as NsisUpdater;
+
+        nsisUpdater.verifyUpdateCodeSignature = (publishers, tmpPath) => {
+          try {
+            const signatureAuthRs = execFileSync(
+              `set "PSModulePath=" & chcp 65001 >NUL & powershell.exe`,
+              [
+                '-NoProfile',
+                '-NonInteractive',
+                '-InputFormat',
+                'None',
+                '-Command',
+                `"Get-AuthenticodeSignature -LiteralPath '${tmpPath}' | ConvertTo-Json -Compress"`,
+              ],
+              { shell: true, timeout: 20_000 },
+            );
+
+            return verifySignature({
+              publishers,
+              tmpPath,
+              signature: JSON.parse(signatureAuthRs.toString('utf8')),
+            });
+          } catch (error) {
+            const message =
+              '[verifyUpdateCodeSignature] Failed to get authentication code signature!';
+            this.logger.error('%s | Error: %s', message, error);
+            return Promise.resolve(message);
+          }
+        };
+        break;
+      }
+      default: {
+        this.logger.warn(
+          '[bindAutoUpdater] Unsupported custom verifyUpdateCodeSignature | platform: %s | supported: %s',
+          platform,
+          ['win32'],
+        );
+        return;
+      }
+    }
+  }
+
+  // ------------------------------------------------------------------------------
   getApplicationInstance(): Electron.App {
     return this.application;
+  }
+
+  getDialog(): Electron.Main.Dialog {
+    return dialog;
   }
 
   getWindowManager(): IWindowManager {
@@ -126,6 +263,7 @@ export abstract class AbstractElectronApplication
       this.application.quit();
     }
 
+    this.bindAutoUpdater();
     this.bindContext();
     this.bindEvents();
   }
@@ -346,6 +484,9 @@ export abstract class AbstractElectronApplication
 
 // --------------------------------------------------------------------------------
 export abstract class BaseElectronApplication extends AbstractElectronApplication {
+  // ----------------------------------------------------------------------
+  // Main Application Events
+  // ----------------------------------------------------------------------
   override onBeforeMigrate(): ValueOrPromise<void> {
     return;
   }
@@ -395,7 +536,7 @@ export abstract class BaseElectronApplication extends AbstractElectronApplicatio
       return;
     }
 
-    crossProcessApplication.quit();
+    this.application.quit();
   }
 
   override onWillQuit(event: Electron.Event): void {
@@ -408,5 +549,95 @@ export abstract class BaseElectronApplication extends AbstractElectronApplicatio
 
   override onQuit(event: Electron.Event, exitCode: number): void {
     this.logger.debug('[onQuit] Application QUIT | exitCode: %s', event, exitCode);
+  }
+
+  // ----------------------------------------------------------------------
+  // Application Updater Events
+  // ----------------------------------------------------------------------
+  override onUpdateError(error: Error): ValueOrPromise<void> {
+    this.logger.error(
+      '[onUpdateError] Update Error | Failed to update new version\nError: %s',
+      error,
+    );
+
+    const userChoice = this.getDialog().showMessageBoxSync({
+      type: 'error',
+      title: 'Update Error',
+      message: `[onUpdateError] Update Error | Failed to update new version\nError: ${error.name} - ${error.message}`,
+    });
+
+    if (userChoice) {
+      this.application.quit();
+    }
+  }
+
+  override onCheckingForUpdate(): ValueOrPromise<void> {
+    this.logger.info('[onCheckingForUpdate] Checking for update...');
+  }
+
+  override onUpdateNotAvailable(updateInfo: UpdateInfo): ValueOrPromise<void> {
+    const currentVersion = this.application.getVersion();
+    this.logger.info(
+      '[onUpdateNotAvailable] currentVersion: %s | updateInfo: %j',
+      currentVersion,
+      updateInfo,
+    );
+  }
+
+  override async onUpdateAvailable(updateInfo: UpdateInfo) {
+    const currentVersion = this.application.getVersion();
+    this.logger.info(
+      '[onUpdateAvailable] New version is now available | currentVersion: %s | updateInfo: %j',
+      currentVersion,
+      updateInfo,
+    );
+
+    const userChoice = this.getDialog().showMessageBoxSync({
+      type: 'info',
+      title: 'Update Available',
+      message: `New MT_CTS version is now available\n\nCurrent version: ${currentVersion}\nNew version: ${updateInfo.version}\nRelease Date: ${updateInfo.releaseDate}`,
+      buttons: ['NO', 'YES'],
+    });
+
+    if (!userChoice) {
+      this.logger.error(
+        '[onUpdateAvailable] DENIED update new version | Force close application!',
+      );
+      this.application.quit();
+    }
+
+    this.logger.info(
+      '[onUpdateAvailable] ACCEPTED update new version | Start downloading new version...!',
+    );
+    await this.autoUpdater.downloadUpdate();
+  }
+
+  override onDownloadProgress(progress: ProgressInfo): ValueOrPromise<void> {
+    this.logger.info(
+      '[onDownloadProgress] Downloading new version | progress: %j',
+      progress,
+    );
+  }
+
+  override onUpdateDownloaded(updateInfo: UpdateInfo): ValueOrPromise<void> {
+    const willQuitAndInstall =
+      this.autoUpdaterOptions &&
+      this.autoUpdaterOptions.use &&
+      this.autoUpdaterOptions.autoInstallAfterDownloaded;
+    this.logger.info(
+      '[onUpdateDownloaded] willQuitAndInstall: %s | updateInfo: %j',
+      willQuitAndInstall,
+      updateInfo,
+    );
+
+    if (!willQuitAndInstall) {
+      return;
+    }
+
+    this.logger.info(
+      '[onUpdateDownloaded] Quit and install new version | updateInfo: %j',
+      updateInfo,
+    );
+    return this.autoUpdater.quitAndInstall();
   }
 }

@@ -5,6 +5,7 @@ import {
   DynamicValueProviderClass,
 } from '@minimaltech/node-infra/@lb/core';
 import { JsonSchema } from '@minimaltech/node-infra/@lb/rest';
+import { AppUpdater, ProgressInfo, UpdateInfo } from 'electron-updater';
 import { BrowserWindow, TBrowserWindowOptions } from '../base/models';
 import { ExposeVerbs } from './constants';
 
@@ -30,9 +31,22 @@ export interface IWindowManager {
 }
 
 // ----------------------------------------------------------------------
-export interface IElectronApplication {
-  getApplicationInstance(): Electron.App;
+export interface IElectronUpdater {
+  bindAutoUpdater(): ValueOrPromise<void>;
+  getAutoUpdater(): AppUpdater;
+
+  onCheckingForUpdate(): ValueOrPromise<void>;
+  onUpdateAvailable(updateInfo: UpdateInfo): ValueOrPromise<void>;
+  onUpdateNotAvailable(updateInfo: UpdateInfo): ValueOrPromise<void>;
+  onDownloadProgress(progress: ProgressInfo): ValueOrPromise<void>;
+  onUpdateDownloaded(updateInfo: UpdateInfo): ValueOrPromise<void>;
+  onUpdateError(error: Error): ValueOrPromise<void>;
+}
+
+export interface IElectronApplication extends IElectronUpdater {
+  getApplicationInstance(): Electron.Main.App;
   getWindowManager(): IWindowManager;
+  getDialog(): Electron.Main.Dialog;
 
   // ------------------------------------------------------------------------------
   preConfigure(): ValueOrPromise<void>;
