@@ -61,6 +61,7 @@ export abstract class AbstractElectronApplication
   // ------------------------------------------------------------------------------
   constructor(opts: {
     scope: string;
+    appName?: string;
 
     application?: Electron.App;
     autoUpdater?: AppUpdater;
@@ -74,10 +75,13 @@ export abstract class AbstractElectronApplication
 
     // this.routes = new Map<string | symbol, Function>();
     this.application = opts.application ?? crossProcessApplication;
+
+    if (opts.appName) {
+      this.application.setName(opts.appName);
+    }
+
     this.autoUpdater = opts.autoUpdater ?? crossProcessUpdater;
-
     this.windowManager = opts.windowManager ?? WindowManager.getInstance();
-
     this.autoUpdaterOptions = opts.autoUpdaterOptions;
   }
 
