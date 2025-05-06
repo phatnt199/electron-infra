@@ -1,4 +1,4 @@
-import { IAutoUpdaterOptions } from '@/common';
+import { CASignTypes, IAutoUpdaterOptions } from '@/common';
 import { AnyType, dayjs } from '@minimaltech/node-infra';
 
 export const verifySelfCodeSigningSignature = async (opts: {
@@ -12,9 +12,9 @@ export const verifySelfCodeSigningSignature = async (opts: {
     return null;
   }
 
-  const { signType } = autoUpdaterOptions.verify;
-  if (signType !== 'self-sign') {
-    return `[verifySignature] Not allow custom verifySignature for non self-sign verification | signType: ${signType}`;
+  const { caType } = autoUpdaterOptions.verify;
+  if (caType !== CASignTypes.SELF_SIGNED_CA) {
+    return `Not allow custom verifySignature for non self-signed verification | caType: ${caType}`;
   }
 
   // Validate OS SignTool Result
@@ -23,7 +23,7 @@ export const verifySelfCodeSigningSignature = async (opts: {
   const { signature } = opts;
 
   if (doVerifySignToolStatus && signature.Status !== 0) {
-    return `[verifyUpdateCodeSignature] Invalid signature status | status: ${signature.Status} - ${signature.StatusMessage}`;
+    return `Invalid signature status | status: ${signature.Status} - ${signature.StatusMessage}`;
   }
 
   // Validate Certificate Issuer
@@ -34,7 +34,7 @@ export const verifySelfCodeSigningSignature = async (opts: {
     const isValidCN = validCNs.findIndex(cn => subject.includes(cn)) > -1;
 
     if (!isValidCN) {
-      return `[verifyUpdateCodeSignature] Invalid certificate subject | expected: ${validCNs} | subject: ${subject}`;
+      return `Invalid certificate subject | expected: ${validCNs} | subject: ${subject}`;
     }
   }
 

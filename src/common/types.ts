@@ -34,10 +34,11 @@ export interface IWindowManager {
 export interface IAutoUpdaterOptions<S> {
   use: true;
   autoInstallAfterDownloaded: boolean;
+  forceUpdateNewVersion?: boolean;
   verify:
-    | { signType: 'trusted-ca' }
+    | { caType: 'trusted-ca' }
     | {
-        signType: 'self-sign';
+        caType: 'self-signed-ca';
         doVerifySignToolStatus?: boolean;
         validSubjects?: Array<string>;
         verifySignature?: (opts: {

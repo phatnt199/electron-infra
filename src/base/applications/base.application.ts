@@ -1,4 +1,4 @@
-import { ExposeVerbs } from '@/common/constants';
+import { CASignTypes, ExposeVerbs } from '@/common/constants';
 import { BindingKeys } from '@/common/keys';
 import {
   AnyType,
@@ -84,6 +84,7 @@ export abstract class AbstractElectronApplication
   // ------------------------------------------------------------------------------
   // Events Binding
   // ------------------------------------------------------------------------------
+  // Default Electron App Events
   abstract onBeforeMigrate(): ValueOrPromise<void>;
   abstract onMigrate(): ValueOrPromise<void>;
   abstract onAfterMigrate(): ValueOrPromise<void>;
@@ -112,6 +113,7 @@ export abstract class AbstractElectronApplication
   abstract bindContext(): ValueOrPromise<void>;
 
   // ------------------------------------------------------------------------------
+  // Default Auto Updater Events
   abstract onCheckingForUpdate(): ValueOrPromise<void>;
   abstract onUpdateAvailable(updateInfo: UpdateInfo): ValueOrPromise<void>;
   abstract onUpdateNotAvailable(updateInfo: UpdateInfo): ValueOrPromise<void>;
@@ -121,6 +123,66 @@ export abstract class AbstractElectronApplication
 
   getAutoUpdater(): AppUpdater {
     return this.autoUpdater;
+  }
+
+  executeWin32SignatureVerification() {
+    if (!this.autoUpdaterOptions?.use) {
+      return;
+    }
+
+    const verifyOptions = this.autoUpdaterOptions.verify;
+    if (verifyOptions.caType !== CASignTypes.SELF_SIGNED_CA) {
+      return;
+    }
+
+    const { verifySignature = verifySelfCodeSigningSignature } = verifyOptions;
+    const nsisUpdater = this.autoUpdater as NsisUpdater;
+
+    nsisUpdater.verifyUpdateCodeSignature = async (
+      publishers,
+      unescapedTempUpdateFile,
+    ) => {
+      if (!this.autoUpdaterOptions) {
+        return 'Invalid verifySelfCodeSigningSignature implementation!';
+      }
+
+      try {
+        const tmpPath = path.normalize(unescapedTempUpdateFile.replace(/'/g, "''"));
+        this.logger.info(
+          '[verifyUpdateCodeSignature] Verifying signature | publisherNames: %s | tmpPath: %s',
+          publishers,
+          tmpPath,
+        );
+
+        const signatureAuthRs = execFileSync(
+          `set "PSModulePath=" & chcp 65001 >NUL & powershell.exe`,
+          [
+            '-NoProfile',
+            '-NonInteractive',
+            '-InputFormat',
+            'None',
+            '-Command',
+            `"Get-AuthenticodeSignature -LiteralPath '${tmpPath}' | ConvertTo-Json -Compress"`,
+          ],
+          { shell: true, timeout: 20_000 },
+        );
+
+        const verifyRs = await verifySignature({
+          publishers,
+          tmpPath,
+          signature: JSON.parse(signatureAuthRs.toString('utf8')),
+          autoUpdaterOptions: this.autoUpdaterOptions,
+        });
+
+        this.logger.info('[verifyUpdateCodeSignature] verifyRs: %j', verifyRs);
+        return verifyRs;
+      } catch (error) {
+        const message =
+          '[verifyUpdateCodeSignature] Failed to get authentication code signature!';
+        this.logger.error('%s | Error: %s', message, error);
+        return Promise.resolve(message);
+      }
+    };
   }
 
   bindAutoUpdater(): ValueOrPromise<void> {
@@ -160,59 +222,7 @@ export abstract class AbstractElectronApplication
     const platform = os.platform();
     switch (platform) {
       case 'win32': {
-        const verifyOptions = this.autoUpdaterOptions.verify;
-        if (verifyOptions.signType !== 'self-sign') {
-          break;
-        }
-
-        const { verifySignature } = verifyOptions;
-
-        const nsisUpdater = this.autoUpdater as NsisUpdater;
-        nsisUpdater.verifyUpdateCodeSignature = async (
-          publishers,
-          unescapedTempUpdateFile,
-        ) => {
-          if (!this.autoUpdaterOptions) {
-            return 'Invalid verifySelfCodeSigningSignature implementation!';
-          }
-
-          try {
-            const tmpPath = path.normalize(unescapedTempUpdateFile.replace(/'/g, "''"));
-            this.logger.info(
-              '[verifyUpdateCodeSignature] Verifying signature | publisherNames: %s | tmpPath: %s',
-              publishers,
-              tmpPath,
-            );
-
-            const signatureAuthRs = execFileSync(
-              `set "PSModulePath=" & chcp 65001 >NUL & powershell.exe`,
-              [
-                '-NoProfile',
-                '-NonInteractive',
-                '-InputFormat',
-                'None',
-                '-Command',
-                `"Get-AuthenticodeSignature -LiteralPath '${tmpPath}' | ConvertTo-Json -Compress"`,
-              ],
-              { shell: true, timeout: 20_000 },
-            );
-
-            const verifyRs = await (verifySignature ?? verifySelfCodeSigningSignature)({
-              publishers,
-              tmpPath,
-              signature: JSON.parse(signatureAuthRs.toString('utf8')),
-              autoUpdaterOptions: this.autoUpdaterOptions,
-            });
-
-            this.logger.info('[verifyUpdateCodeSignature] verifyRs: %j', verifyRs);
-            return verifyRs;
-          } catch (error) {
-            const message =
-              '[verifyUpdateCodeSignature] Failed to get authentication code signature!';
-            this.logger.error('%s | Error: %s', message, error);
-            return Promise.resolve(message);
-          }
-        };
+        this.executeWin32SignatureVerification();
         break;
       }
       default: {
@@ -560,15 +570,12 @@ export abstract class BaseElectronApplication extends AbstractElectronApplicatio
   // Application Updater Events
   // ----------------------------------------------------------------------
   override onUpdateError(error: Error): ValueOrPromise<void> {
-    this.logger.error(
-      '[onUpdateError] Update Error | Failed to update new version\nError: %s',
-      error,
-    );
+    this.logger.error('[onUpdateError] Failed to update new version | Error: %s', error);
 
     this.getDialog().showMessageBoxSync({
       type: 'error',
       title: 'Update Error',
-      message: `[onUpdateError] Update Error | Failed to update new version\nError: ${error.name} - ${error.message}`,
+      message: `Failed to update new version\n\n${error.name}\n${error.message}`,
     });
 
     this.application.quit();
@@ -588,17 +595,35 @@ export abstract class BaseElectronApplication extends AbstractElectronApplicatio
   }
 
   override async onUpdateAvailable(updateInfo: UpdateInfo) {
+    if (!this.autoUpdaterOptions?.use) {
+      return;
+    }
+
+    const { forceUpdateNewVersion } = this.autoUpdaterOptions;
+
     const currentVersion = this.application.getVersion();
+
     this.logger.info(
       '[onUpdateAvailable] New version is now available | currentVersion: %s | updateInfo: %j',
       currentVersion,
       updateInfo,
     );
 
+    // Force update new application version
+    if (forceUpdateNewVersion) {
+      this.logger.info(
+        '[onUpdateAvailable] FORCE update new version | Start downloading new version...!',
+      );
+      await this.autoUpdater.downloadUpdate();
+      return;
+    }
+
+    // Notify new application version
+    const applicationName = this.application.getName();
     const userChoice = this.getDialog().showMessageBoxSync({
       type: 'info',
       title: 'Update Available',
-      message: `New MT_CTS version is now available\n\nCurrent version: ${currentVersion}\nNew version: ${updateInfo.version}\nRelease Date: ${updateInfo.releaseDate}`,
+      message: `New ${applicationName} version is now available\n\nCurrent version: ${currentVersion}\nNew version: ${updateInfo.version}\nRelease date: ${updateInfo.releaseDate}`,
       buttons: ['NO', 'YES'],
     });
 
