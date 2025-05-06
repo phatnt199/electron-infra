@@ -16,20 +16,8 @@ import {
   DynamicValueProviderClass,
   MetadataInspector,
 } from '@minimaltech/node-infra/@loopback/core';
-import {
-  IpcMainEvent,
-  IpcMainInvokeEvent,
-  app as crossProcessApplication,
-  dialog,
-  ipcMain,
-} from 'electron';
-import {
-  AppUpdater,
-  NsisUpdater,
-  ProgressInfo,
-  UpdateInfo,
-  autoUpdater as crossProcessUpdater,
-} from 'electron-updater';
+import { IpcMainEvent, IpcMainInvokeEvent, dialog, ipcMain } from 'electron';
+import { AppUpdater, NsisUpdater, ProgressInfo, UpdateInfo } from 'electron-updater';
 import fs from 'fs';
 import { execFileSync } from 'node:child_process';
 import os from 'node:os';
@@ -63,26 +51,36 @@ export abstract class AbstractElectronApplication
     scope: string;
     appName?: string;
 
-    application?: Electron.App;
+    application: Electron.App;
     autoUpdater?: AppUpdater;
-
     windowManager?: IWindowManager;
 
-    autoUpdaterOptions?: IAutoUpdaterOptions<AnyType>;
+    autoUpdaterOptions?: { use: false } | IAutoUpdaterOptions<AnyType>;
   }) {
     super();
     this.logger = LoggerFactory.getLogger([opts.scope]);
 
     // this.routes = new Map<string | symbol, Function>();
-    this.application = opts.application ?? crossProcessApplication;
+    this.application = opts.application;
 
     if (opts.appName) {
       this.application.setName(opts.appName);
     }
 
-    this.autoUpdater = opts.autoUpdater ?? crossProcessUpdater;
     this.windowManager = opts.windowManager ?? WindowManager.getInstance();
     this.autoUpdaterOptions = opts.autoUpdaterOptions;
+
+    if (!this.autoUpdaterOptions?.use) {
+      return;
+    }
+
+    if (!opts.autoUpdater) {
+      throw getError({
+        message: 'Missing arg opts.autoUpdater!',
+      });
+    }
+
+    this.autoUpdater = opts.autoUpdater;
   }
 
   // ------------------------------------------------------------------------------
