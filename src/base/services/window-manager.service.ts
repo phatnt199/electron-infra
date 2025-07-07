@@ -106,10 +106,8 @@ export class WindowManager extends BaseService implements IWindowManager {
       this.container.delete(identifier);
     });
 
-    window.on('close', () => {
-      onClose?.(window);
-
-      this.container.delete(identifier);
+    window.on('close', event => {
+      onClose?.({ window, event });
     });
 
     // -----------------------------------------------------------------------------------
