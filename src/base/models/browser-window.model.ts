@@ -14,7 +14,7 @@ export type TBrowserWindowOptions = BrowserWindowConstructorOptions & {
   useDevTool?: boolean;
   menuFactory?: AbstractMenuFactory;
 
-  onClose?: (window: BrowserWindow) => void;
+  onClose?: (opts: { event: Electron.Event; window: BrowserWindow }) => void;
   onClosed?: (window: BrowserWindow) => void;
   onReadyToShow?: (window: BrowserWindow) => void;
   onShow?: (window: BrowserWindow) => void;
