@@ -1,6 +1,6 @@
 {
   "name": "@minimaltech/electron-infra",
-  "version": "0.0.23-1",
+  "version": "0.0.23",
   "description": "Minimal Technology ElectronJS Infrastructure",
   "keywords": [
     "desktop",
