@@ -19,10 +19,10 @@ import {
 } from '@minimaltech/node-infra/lb-core';
 import { IpcMainEvent, IpcMainInvokeEvent, dialog, ipcMain } from 'electron';
 import { AppUpdater, NsisUpdater, ProgressInfo, UpdateInfo } from 'electron-updater';
-import fs from 'fs';
 import { execFileSync } from 'node:child_process';
+import fs from 'node:fs';
 import os from 'node:os';
-import path from 'path';
+import path from 'node:path';
 import {
   IAutoUpdaterOptions,
   IElectronApplication,
