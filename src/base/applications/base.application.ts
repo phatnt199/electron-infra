@@ -1,5 +1,6 @@
 import { CASignTypes, ExposeVerbs } from '@/common/constants';
 import { BindingKeys } from '@/common/keys';
+import { verifySelfCodeSigningSignature } from '@/helpers/self-code-siging.helper';
 import {
   AnyType,
   ApplicationLogger,
@@ -15,7 +16,7 @@ import {
   Constructor,
   DynamicValueProviderClass,
   MetadataInspector,
-} from '@minimaltech/node-infra/@loopback/core';
+} from '@minimaltech/node-infra/lb-core';
 import { IpcMainEvent, IpcMainInvokeEvent, dialog, ipcMain } from 'electron';
 import { AppUpdater, NsisUpdater, ProgressInfo, UpdateInfo } from 'electron-updater';
 import fs from 'fs';
@@ -29,7 +30,6 @@ import {
   IWindowManager,
 } from '../../common/types';
 import { WindowManager } from '../services';
-import { verifySelfCodeSigningSignature } from '@/helpers/self-code-siging.helper';
 
 // --------------------------------------------------------------------------------
 export abstract class AbstractElectronApplication
